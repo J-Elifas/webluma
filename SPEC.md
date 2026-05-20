@@ -49,14 +49,14 @@ Logo style:
 
 Use this palette consistently across the UI:
 
-| Role | Name | Hex |
-|---|---|---|
-| Primary dark | Midnight Slate | `#0F172A` |
-| Main accent | Luma Blue | `#38BDF8` |
-| Secondary glow | Soft Mint | `#99F6E4` |
-| Background | Cloud White | `#F8FAFC` |
-| Neutral text | Slate Gray | `#64748B` |
-| Border/light UI | Mist Gray | `#CBD5E1` |
+| Role            | Name           | Hex       |
+| --------------- | -------------- | --------- |
+| Primary dark    | Midnight Slate | `#0F172A` |
+| Main accent     | Luma Blue      | `#38BDF8` |
+| Secondary glow  | Soft Mint      | `#99F6E4` |
+| Background      | Cloud White    | `#F8FAFC` |
+| Neutral text    | Slate Gray     | `#64748B` |
+| Border/light UI | Mist Gray      | `#CBD5E1` |
 
 Tailwind config may be extended to include these brand colors.
 
@@ -110,12 +110,12 @@ Required behavior:
 - Show a large responsive login card.
 - Left side contains a creative CMS-themed illustration/art panel.
 - Right side contains:
-  - Polished login heading and meaningful CMS-focused helper text.
-  - Real email input.
-  - Real password input.
-  - Real submit button inside the form.
-  - Visual-only OAuth options for Google, Facebook, and Apple using icons.
-  - Guest Login action/link.
+    - Polished login heading and meaningful CMS-focused helper text.
+    - Real email input.
+    - Real password input.
+    - Real submit button inside the form.
+    - Visual-only OAuth options for Google, Facebook, and Apple using icons.
+    - Guest Login action/link.
 - Do not implement real authentication.
 - For now, submitting the login form and selecting **Guest Login** route directly to `/app`.
 - The login form must redirect to `/app` on submit without real backend validation.
@@ -135,8 +135,8 @@ Required behavior:
 
 - White blank page.
 - Show a small success indication, for example:
-  - “Login successful”
-  - “Welcome to Webluma”
+    - “Login successful”
+    - “Welcome to Webluma”
 - Do not build CMS features yet.
 - This page is only a placeholder for future development.
 

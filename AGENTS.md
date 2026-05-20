@@ -44,10 +44,10 @@ Recent commits use concise, imperative summaries (for example: `Scaffold TinyNot
 
 - Commit messages: short subject line, verb-first, scoped to one logical change.
 - PRs should include:
-  - What changed and why.
-  - Linked issue/spec section (`SPEC.MD` reference when relevant).
-  - Screenshots/GIFs for UI-affecting changes.
-  - Verification notes (commands run, e.g. `npm run lint`, `npm run build`).
+    - What changed and why.
+    - Linked issue/spec section (`SPEC.MD` reference when relevant).
+    - Screenshots/GIFs for UI-affecting changes.
+    - Verification notes (commands run, e.g. `npm run lint`, `npm run build`).
 
 ## Security & Configuration Tips
 
