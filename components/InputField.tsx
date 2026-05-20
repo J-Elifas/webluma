@@ -27,19 +27,6 @@ function LockIcon() {
   );
 }
 
-function EyeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-      <path
-        d="M2.3 12s3.5-5.7 9.7-5.7S21.7 12 21.7 12s-3.5 5.7-9.7 5.7S2.3 12 2.3 12Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <circle cx="12" cy="12" r="2.8" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
 export default function InputField({
   id,
   label,
@@ -52,7 +39,7 @@ export default function InputField({
       <label htmlFor={id} className="block text-sm font-semibold text-midnight-slate">
         {label}
       </label>
-      <div className="flex items-center rounded-xl border border-mist-gray bg-white px-3 py-2.5 shadow-[0_1px_0_rgba(15,23,42,0.02)] focus-within:border-luma-blue">
+      <div className="flex items-center rounded-xl border border-mist-gray bg-white px-3 py-2.5 shadow-[0_1px_0_rgba(15,23,42,0.02)] focus-within:border-luma-blue focus-within:ring-2 focus-within:ring-luma-blue/20">
         <span className="mr-2 text-slate-gray" aria-hidden="true">
           {type === "email" ? <MailIcon /> : <LockIcon />}
         </span>
@@ -60,14 +47,9 @@ export default function InputField({
         <input
           id={id}
           type={type}
-          className="w-full border-0 bg-transparent text-sm text-midnight-slate outline-none placeholder:text-slate-gray/75"
+          className="min-w-0 flex-1 border-0 bg-transparent text-sm text-midnight-slate outline-none placeholder:text-slate-gray/75"
           {...props}
         />
-        {type === "password" && (
-          <span className="ml-2 text-slate-gray" aria-hidden="true">
-            <EyeIcon />
-          </span>
-        )}
       </div>
     </div>
   );

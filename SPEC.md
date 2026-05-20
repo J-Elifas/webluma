@@ -4,11 +4,11 @@
 
 Build the initial UI for a CMS web app named **Webluma**.
 
-The first deliverable is a polished login page inspired by the provided reference image, plus a minimal blank app page that users reach after pressing either the login button or guest login button.
+The first deliverable is a production-ready CMS login page inspired by the provided reference image, plus a minimal blank app page that users reach after submitting the login form or choosing guest login.
 
 This is an **npm + TypeScript + Next.js + Tailwind CSS** project.
 
-Do not add database, SQL, backend, authentication services, OAuth, API integrations, or third-party login providers yet.
+Do not add database, SQL, backend, authentication services, API integrations, or real third-party login providers yet.
 
 ---
 
@@ -110,14 +110,17 @@ Required behavior:
 - Show a large responsive login card.
 - Left side contains a creative CMS-themed illustration/art panel.
 - Right side contains:
-  - Login heading.
-  - Email input.
-  - Password input.
-  - Login button.
-  - Guest Login button.
+  - Polished login heading and meaningful CMS-focused helper text.
+  - Real email input.
+  - Real password input.
+  - Real submit button inside the form.
+  - Visual-only OAuth options for Google, Facebook, and Apple using icons.
+  - Guest Login action/link.
 - Do not implement real authentication.
-- For now, the **Login** button and **Guest Login** button have the same functionality.
-- Pressing either button should route directly to `/app` without requiring email or password.
+- For now, submitting the login form and selecting **Guest Login** route directly to `/app`.
+- The login form must redirect to `/app` on submit without real backend validation.
+- OAuth options must not perform login, contact providers, or navigate.
+- Do not add register/sign-up functionality.
 
 Navigation:
 
@@ -143,13 +146,14 @@ Required behavior:
 
 For now:
 
-- Do not use OAuth.
-- Do not use Google, Facebook, Apple, GitHub, or any third-party provider.
+- Show Google, Facebook, and Apple as visual-only OAuth options.
+- Do not call Google, Facebook, Apple, GitHub, or any third-party provider.
 - Do not add auth libraries.
 - Do not add backend session handling.
 - Do not connect to a database.
 - Do not add API routes for login.
 - Login and Guest Login are only simple frontend route transitions to `/app`.
+- Do not add registration, sign-up, or password reset flows.
 
 ---
 
@@ -181,7 +185,11 @@ Login page:
 - Use rounded corners, soft shadows, subtle gradients, and clean borders.
 - Use the provided palette only or very close tints derived from it.
 - Form inputs should have icons or simple visual affordances if practical.
-- Login and Guest Login buttons should both clearly lead into the app for now.
+- The login form should use production-quality typography, clear hierarchy, and consistent spacing.
+- The email and password controls should be real form fields with accessible labels, useful placeholders, and appropriate autocomplete attributes.
+- The Login button should be a real submit button inside the form.
+- Guest Login should clearly lead into the app for now.
+- OAuth options should look like provider choices with Google, Facebook, and Apple icons, but remain visual-only and non-functional.
 - Avoid clutter.
 
 Expected result:
@@ -240,7 +248,7 @@ Do not implement:
 - SQL.
 - Backend services.
 - Real authentication.
-- OAuth.
+- Real OAuth.
 - User registration.
 - Password reset.
 - External auth providers.
@@ -257,8 +265,14 @@ The task is complete when:
 - `/app` renders the blank success page from the `(app)` route group.
 - The design follows the reference layout and uses the specified color palette.
 - A reusable SVG Webluma logo exists.
-- Login and Guest Login both route to `/app` without password or backend logic.
+- The login screen uses polished production-style CMS copy with clear typography and no placeholder/demo copy in the form area.
+- Email and password are real form inputs.
+- Login is a real submit button inside the form.
+- Submitting the login form routes to `/app` without password validation, backend logic, sessions, or API routes.
+- Guest Login routes to `/app` as a simple action/link.
+- Google, Facebook, and Apple OAuth options are visible with icons and do not perform login or provider calls.
+- No register/sign-up functionality is added.
 - Required reusable components are created.
-- No database, OAuth, backend, or third-party auth functionality is added.
+- No database, real OAuth, backend, or third-party auth functionality is added.
 - LF line-ending guidance is handled or documented.
 - CSP guidance is followed.
