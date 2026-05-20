@@ -1,26 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --midnight-slate: #0f172a;
+  --luma-blue: #38bdf8;
+  --soft-mint: #99f6e4;
+  --cloud-white: #f8fafc;
+  --slate-gray: #64748b;
+  --mist-gray: #cbd5e1;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-midnight-slate: var(--midnight-slate);
+  --color-luma-blue: var(--luma-blue);
+  --color-soft-mint: var(--soft-mint);
+  --color-cloud-white: var(--cloud-white);
+  --color-slate-gray: var(--slate-gray);
+  --color-mist-gray: var(--mist-gray);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.app-surface {
+  background:
+    radial-gradient(circle at 5% 2%, rgba(56, 189, 248, 0.2) 0%, transparent 26%),
+    radial-gradient(circle at 92% 95%, rgba(153, 246, 228, 0.32) 0%, transparent 32%),
+    linear-gradient(145deg, #f8fafc 0%, #fff7fb 45%, #f8fafc 100%);
 }
