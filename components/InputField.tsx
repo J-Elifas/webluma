@@ -6,6 +6,7 @@ interface InputFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "t
     id: string;
     label: string;
     type?: FieldType;
+    error?: string;
 }
 
 function MailIcon() {
@@ -46,15 +47,26 @@ export default function InputField({
     id,
     label,
     type = "text",
+    error,
     className = "",
+    "aria-describedby": ariaDescribedBy,
     ...props
 }: InputFieldProps) {
+    const errorId = `${id}-error`;
+    const describedBy = [ariaDescribedBy, error ? errorId : undefined].filter(Boolean).join(" ");
+
     return (
         <div className={`space-y-2 ${className}`.trim()}>
             <label htmlFor={id} className="block text-sm font-semibold text-midnight-slate">
                 {label}
             </label>
-            <div className="flex items-center rounded-xl border border-mist-gray bg-white px-3 py-2.5 shadow-[0_1px_0_rgba(15,23,42,0.02)] focus-within:border-luma-blue focus-within:ring-2 focus-within:ring-luma-blue/20">
+            <div
+                className={`flex items-center rounded-xl border bg-white px-3 py-2.5 shadow-[0_1px_0_rgba(15,23,42,0.02)] focus-within:ring-2 ${
+                    error
+                        ? "border-red-300 focus-within:border-red-400 focus-within:ring-red-100"
+                        : "border-mist-gray focus-within:border-luma-blue focus-within:ring-luma-blue/20"
+                }`}
+            >
                 <span className="mr-2 text-slate-gray" aria-hidden="true">
                     {type === "email" ? <MailIcon /> : <LockIcon />}
                 </span>
@@ -62,10 +74,17 @@ export default function InputField({
                 <input
                     id={id}
                     type={type}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={describedBy || undefined}
                     className="min-w-0 flex-1 border-0 bg-transparent text-sm text-midnight-slate outline-none placeholder:text-slate-gray/75"
                     {...props}
                 />
             </div>
+            {error ? (
+                <p id={errorId} className="text-sm font-medium text-red-500">
+                    {error}
+                </p>
+            ) : null}
         </div>
     );
 }

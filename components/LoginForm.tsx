@@ -1,6 +1,6 @@
 "use client";
 
-import type { FormEvent, ReactNode } from "react";
+import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import ButtonLink from "@/components/ButtonLink";
 import InputField from "@/components/InputField";
@@ -9,6 +9,32 @@ import SectionHeading from "@/components/SectionHeading";
 interface OAuthOption {
     name: string;
     icon: ReactNode;
+}
+
+interface LoginFormValues {
+    email: string;
+    password: string;
+}
+
+type LoginFormErrors = Partial<Record<keyof LoginFormValues, string>>;
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateLoginForm({ email, password }: LoginFormValues) {
+    const errors: LoginFormErrors = {};
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+        errors.email = "Enter your email address.";
+    } else if (!emailPattern.test(trimmedEmail)) {
+        errors.email = "Enter a valid email address.";
+    }
+
+    if (!password.trim()) {
+        errors.password = "Enter your password.";
+    }
+
+    return errors;
 }
 
 function GoogleIcon() {
@@ -62,13 +88,41 @@ const oauthOptions: OAuthOption[] = [
 
 export default function LoginForm() {
     const router = useRouter();
+    const [formValues, setFormValues] = useState<LoginFormValues>({
+        email: "",
+        password: "",
+    });
+    const [errors, setErrors] = useState<LoginFormErrors>({});
 
     function continueToApp() {
         router.push("/app");
     }
 
+    function handleFieldChange(event: ChangeEvent<HTMLInputElement>) {
+        const fieldName = event.target.name as keyof LoginFormValues;
+        const { value } = event.target;
+
+        setFormValues((currentValues) => ({
+            ...currentValues,
+            [fieldName]: value,
+        }));
+
+        setErrors((currentErrors) => ({
+            ...currentErrors,
+            [fieldName]: undefined,
+        }));
+    }
+
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        const nextErrors = validateLoginForm(formValues);
+
+        setErrors(nextErrors);
+
+        if (Object.keys(nextErrors).length > 0) {
+            return;
+        }
+
         continueToApp();
     }
 
@@ -82,7 +136,7 @@ export default function LoginForm() {
                     <SectionHeading title="Welcome back" />
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                     <div className="space-y-4">
                         <InputField
                             id="email"
@@ -91,6 +145,9 @@ export default function LoginForm() {
                             type="email"
                             placeholder="editor@company.com"
                             autoComplete="email"
+                            value={formValues.email}
+                            onChange={handleFieldChange}
+                            error={errors.email}
                         />
                         <InputField
                             id="password"
@@ -99,6 +156,9 @@ export default function LoginForm() {
                             type="password"
                             placeholder="Enter your password"
                             autoComplete="current-password"
+                            value={formValues.password}
+                            onChange={handleFieldChange}
+                            error={errors.password}
                         />
                         <div className="flex justify-end">
                             <button
