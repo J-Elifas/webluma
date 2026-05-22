@@ -2,9 +2,9 @@
 
 import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import ButtonLink from "@/components/ButtonLink";
-import InputField from "@/components/InputField";
-import SectionHeading from "@/components/SectionHeading";
+import ButtonLink from "@/components/ui/ButtonLink";
+import InputField from "@/components/ui/InputField";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 interface OAuthOption {
     name: string;
@@ -95,7 +95,7 @@ export default function LoginForm() {
     const [errors, setErrors] = useState<LoginFormErrors>({});
 
     function continueToApp() {
-        router.push("/app");
+        router.push("/dashboard");
     }
 
     function handleFieldChange(event: ChangeEvent<HTMLInputElement>) {
@@ -204,7 +204,7 @@ export default function LoginForm() {
                     </div>
                 </div>
 
-                <ButtonLink href="/app" variant="secondary">
+                <ButtonLink href="/dashboard" variant="secondary">
                     Continue as guest
                 </ButtonLink>
             </div>

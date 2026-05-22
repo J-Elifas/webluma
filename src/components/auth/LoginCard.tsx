@@ -1,5 +1,5 @@
-import IllustrationPanel from "@/components/IllustrationPanel";
-import LoginForm from "@/components/LoginForm";
+import IllustrationPanel from "@/components/auth/IllustrationPanel";
+import LoginForm from "@/components/auth/LoginForm";
 
 export default function LoginCard() {
     return (

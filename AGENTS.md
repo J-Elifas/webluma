@@ -2,7 +2,6 @@
 
 ## General Instructions
 
-- ALWAYS run `bun run format` AFTER you're done with your task and you edited all files that needed editing
 - ALWAYS run `npm run lint` after making any changes => fix any linting errors you get
 - ALWAYS check for type errors via `npm tsc --noEmit`
 
@@ -10,13 +9,13 @@
 
 This repository is a Next.js App Router project (TypeScript + Tailwind v4).
 
-- `app/`: Route tree, layouts, and page entry points (for example `app/(app)/notes/page.tsx`).
+- `src/app/`: Route tree, layouts, and page entry points (for example `src/app/(app)/notes/page.tsx`).
 - `src/components/`: Shared UI and layout building blocks (for example `src/components/layout/` and `src/components/ui/`).
 - `public/`: Static assets served directly.
 - Root config: `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs`.
 - Product requirements/spec: `SPEC.MD`.
 
-Keep route-level concerns in `app/` and reusable presentation components in `src/components/`.
+Keep route-level concerns in `src/app/` and reusable presentation components in `src/components/`.
 
 ## Build, Test, and Development Commands
 
@@ -26,7 +25,6 @@ Use NPM equivalents also work.
 - `npm run build`: Create a production build.
 - `npm run start`: Run the production server.
 - `npm run lint`: Run `oxlint` for static checks.
-- `bun run format`: Run `oxfmt` to format code.
 
 Run `npm run lint && npm run build` before opening a PR.
 
@@ -39,8 +37,6 @@ Run `npm run lint && npm run build` before opening a PR.
 - Prefer server components by default; use client components only when interactivity is required.
 
 ## Commit & Pull Request Guidelines
-
-Recent commits use concise, imperative summaries (for example: `Scaffold TinyNotes base routes`).
 
 - Commit messages: short subject line, verb-first, scoped to one logical change.
 - PRs should include:
