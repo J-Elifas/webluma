@@ -1,53 +1,107 @@
-# SPEC.md
+# Webluma Product Spec
 
-## Project Overview
+## Overview
 
-Build the initial UI for a CMS web app named **Webluma**.
+Webluma is a CMS web app built with Next.js App Router, TypeScript, npm, and Tailwind CSS v4.
 
-The first deliverable is a production-ready CMS login page inspired by the provided reference image, plus a minimal blank app page that users reach after submitting the login form or choosing guest login.
+The current milestone establishes the production route structure, a polished authentication entry page, and minimal protected app placeholders. Authentication must be implemented in a way that can later connect to real email/password submission, OAuth providers, and backend session handling without replacing the route structure or rebuilding the UI.
 
-This is an **npm + TypeScript + Next.js + Tailwind CSS** project.
+Backend auth services, databases, provider SDKs, and API integrations are outside this route-structure milestone.
 
-Do not add database, SQL, backend, authentication services, API integrations, or real third-party login providers yet.
+## Routing
 
----
+Use `src/app` and App Router route groups:
+
+```txt
+src/
+  app/
+    page.tsx
+    layout.tsx
+    globals.css
+    (auth)/
+      login/
+        page.tsx
+    (app)/
+      dashboard/
+        page.tsx
+      clients/
+        page.tsx
+      billing/
+        page.tsx
+
+  components/
+    ui/
+      ButtonLink.tsx
+      InputField.tsx
+      Logo.tsx
+      SectionHeading.tsx
+    layout/
+      Header.tsx
+      Footer.tsx
+    auth/
+      LoginCard.tsx
+      LoginForm.tsx
+      IllustrationPanel.tsx
+```
+
+Route groups do not appear in public URLs.
+
+- `/` redirects to `/login`.
+- `/login` renders the public authentication page from `src/app/(auth)/login/page.tsx`.
+- `/dashboard` renders the main post-login placeholder from `src/app/(app)/dashboard/page.tsx`.
+- `/clients` renders the clients placeholder from `src/app/(app)/clients/page.tsx`.
+- `/billing` renders the billing placeholder from `src/app/(app)/billing/page.tsx`.
+
+Keep route-level concerns in `src/app` and reusable UI in `src/components`.
+
+## Authentication Entry
+
+The login page must be production-facing in structure and copy:
+
+- Show the reusable Webluma logo.
+- Show a responsive two-column login card on desktop.
+- Include a CMS-themed illustration panel.
+- Include real `email` and `password` inputs with labels, placeholders, validation affordances, and autocomplete attributes.
+- Use a real form submit button for email/password login.
+- Keep the existing Email, OAuth, and Guest entry behavior unless this spec is updated for backend integration work.
+- Route successful entry actions to `/dashboard` during this milestone.
+- Do not add registration, password reset, new provider callbacks, auth libraries, API routes, database access, or session storage in this milestone.
+
+When real auth is added later, the form submission path should be replaced with the project's chosen server action, route handler, or auth client while keeping the `/login` route and component boundaries stable.
+
+## App Pages
+
+`/dashboard`, `/clients`, and `/billing` are protected-app placeholders for now. They should build correctly, use the shared theme, and avoid adding CMS feature workflows until the relevant product scope is defined.
+
+The dashboard may show a small success/welcome indication. The clients and billing pages may remain minimal placeholders.
 
 ## Visual Direction
 
-The login page should follow the same overall structure as the reference:
+The authentication page should feel like a clean CMS/SaaS product:
 
-- Large logo at the top/upper-left area.
-- Centered login card layout.
-- Left side: creative illustration/art panel.
-- Right side: login form.
-- Rounded white container/card.
-- Soft, clean CMS/SaaS feel.
-- Modern spacing, shadows, borders, and responsive behavior.
+- Large Webluma logo near the top.
+- Centered login card with a rounded white container.
+- Creative left-side illustration/art panel.
+- Right-side login form with clear hierarchy and concise CMS-focused copy.
+- Modern spacing, subtle borders, and soft shadows.
+- Responsive layout that stacks or reduces the illustration on small screens.
 
-Be creative with the artwork. Use an illustration that matches the color palette and CMS/productivity theme. Prefer a custom inline SVG/vector-style illustration or locally defined decorative artwork instead of remote assets.
-
----
+Use local SVG/vector artwork or locally defined decorative elements instead of remote assets.
 
 ## Brand
 
 App name: **Webluma**
 
-Create a custom SVG logo for the text **Webluma**.
+The reusable SVG wordmark should render:
 
-Logo style:
-
-- `Web` uses Primary dark.
-- `luma` uses Main accent.
-- Bold, clean, modern wordmark.
-- Similar feel to the reference logo image.
-- Use SVG, not plain text only.
-- The logo should be reusable as a component.
-
----
+- `Web` in Midnight Slate.
+- `luma` in Luma Blue.
+- Bold, clean, modern typography.
+- SVG output, not plain text only.
 
 ## Color Palette
 
-Use this palette consistently across the UI:
+Use this palette consistently:
 
 | Role            | Name           | Hex       |
 | --------------- | -------------- | --------- |
@@ -58,108 +112,11 @@ Use this palette consistently across the UI:
 | Neutral text    | Slate Gray     | `#64748B` |
 | Border/light UI | Mist Gray      | `#CBD5E1` |
 
-Tailwind config may be extended to include these brand colors.
-
----
-
-## App Router Folder Structure
-
-Use route groups to separate authentication pages from the actual app pages.
-
-Required route group structure:
-
-```txt
-src/
-  app/
-    (auth)/
-      page.tsx
-    (app)/
-      app/
-        page.tsx
-  components/
-    Header.tsx
-    Footer.tsx
-    ButtonLink.tsx
-    SectionHeading.tsx
-    Logo.tsx
-    InputField.tsx
-    LoginCard.tsx
-    IllustrationPanel.tsx
-```
-
-Notes:
-
-- `(auth)` contains the login page.
-- `(app)` contains the actual page after login.
-- Route groups should not affect the public URL.
-- The login page should still be available at `/`.
-- The post-login placeholder page should be available at `/app`.
-- Adjust file placement only if the existing project already uses a different but equivalent route-group convention.
-
----
-
-## Pages / Routes
-
-### `/`
-
-Login page located under the `(auth)` route group.
-
-Required behavior:
-
-- Show the Webluma logo.
-- Show a large responsive login card.
-- Left side contains a creative CMS-themed illustration/art panel.
-- Right side contains:
-    - Polished login heading and meaningful CMS-focused helper text.
-    - Real email input.
-    - Real password input.
-    - Real submit button inside the form.
-    - Visual-only OAuth options for Google, Facebook, and Apple using icons.
-    - Guest Login action/link.
-- Do not implement real authentication.
-- For now, submitting the login form and selecting **Guest Login** route directly to `/app`.
-- The login form must redirect to `/app` on submit without real backend validation.
-- OAuth options must not perform login, contact providers, or navigate.
-- Do not add register/sign-up functionality.
-
-Navigation:
-
-- Use `Link` from `next/link` where appropriate.
-- For button-triggered navigation, use standard Next.js navigation patterns.
-
-### `/app`
-
-Base app page after login located under the `(app)` route group.
-
-Required behavior:
-
-- White blank page.
-- Show a small success indication, for example:
-    - “Login successful”
-    - “Welcome to Webluma”
-- Do not build CMS features yet.
-- This page is only a placeholder for future development.
-
----
-
-## Authentication Constraints
-
-For now:
-
-- Show Google, Facebook, and Apple as visual-only OAuth options.
-- Do not call Google, Facebook, Apple, GitHub, or any third-party provider.
-- Do not add auth libraries.
-- Do not add backend session handling.
-- Do not connect to a database.
-- Do not add API routes for login.
-- Login and Guest Login are only simple frontend route transitions to `/app`.
-- Do not add registration, sign-up, or password reset flows.
-
----
+Derived tints are allowed when needed for hover states, focus rings, and subtle backgrounds.
 
 ## Components
 
-Build simple custom reusable components. At minimum:
+Required reusable components:
 
 - `Header`
 - `Footer`
@@ -168,111 +125,39 @@ Build simple custom reusable components. At minimum:
 - `Logo`
 - `InputField`
 - `LoginCard`
+- `LoginForm`
 - `IllustrationPanel`
 
-Use existing project styling patterns if the project already has them.
+Prefer server components by default. Use client components only for form interactivity and navigation.
 
-Keep components small, readable, and reusable.
+## Security And Integration Guidance
 
----
-
-## UI Requirements
-
-Login page:
-
-- Responsive desktop layout with two columns inside the card.
-- On smaller screens, stack the illustration and form vertically or hide/reduce the illustration if needed.
-- Use rounded corners, soft shadows, subtle gradients, and clean borders.
-- Use the provided palette only or very close tints derived from it.
-- Form inputs should have icons or simple visual affordances if practical.
-- The login form should use production-quality typography, clear hierarchy, and consistent spacing.
-- The email and password controls should be real form fields with accessible labels, useful placeholders, and appropriate autocomplete attributes.
-- The Login button should be a real submit button inside the form.
-- Guest Login should clearly lead into the app for now.
-- OAuth options should look like provider choices with Google, Facebook, and Apple icons, but remain visual-only and non-functional.
-- Avoid clutter.
-
-Expected result:
-
-A user lands on `/`, sees a beautiful Webluma login page, presses either **Login** or **Guest Login**, and is routed to `/app`, where a blank success page appears.
-
----
-
-## Technical Requirements
-
-- Use Next.js with TypeScript.
-- Use Tailwind CSS for styling.
-- Use npm.
-- Prefer server components by default.
-- Use client components only where interactivity or navigation requires it.
-- Avoid unnecessary dependencies.
-- Do not introduce state management libraries.
-- Do not add backend functionality.
-
----
-
-## CSP / Security Guidance
-
-Avoid patterns that can cause Content Security Policy issues:
-
-- Do not use `eval`.
-- Do not use `new Function`.
-- Do not use string-based `setTimeout`.
-- Do not use string-based `setInterval`.
-- Do not add `unsafe-eval` unless there is absolutely no safe alternative.
-
-If a CSP warning only happens in development, document it clearly in a short comment or project note instead of weakening production CSP.
-
----
+- Do not commit secrets.
+- Keep user-facing auth errors generic.
+- Validate email/password input before sending it to future auth services.
+- Do not use `eval`, `new Function`, or string-based timers.
+- Do not weaken Content Security Policy for development-only warnings.
+- Use environment variables for future auth provider configuration.
 
 ## Line Endings
 
-Use LF line endings.
-
-Add or document `.gitattributes` if needed to prevent LF to CRLF warnings.
-
-Recommended `.gitattributes`:
+Use LF line endings. Keep `.gitattributes` configured with:
 
 ```txt
 * text=auto eol=lf
 ```
 
----
-
-## Non-Goals
-
-Do not implement:
-
-- CMS dashboard features.
-- Database schema.
-- SQL.
-- Backend services.
-- Real authentication.
-- Real OAuth.
-- User registration.
-- Password reset.
-- External auth providers.
-- API routes unless strictly required by the existing project.
-- Third-party plugins for login or backend behavior.
-
----
-
 ## Acceptance Criteria
 
-The task is complete when:
-
-- `/` renders the Webluma login page from the `(auth)` route group.
-- `/app` renders the blank success page from the `(app)` route group.
-- The design follows the reference layout and uses the specified color palette.
-- A reusable SVG Webluma logo exists.
-- The login screen uses polished production-style CMS copy with clear typography and no placeholder/demo copy in the form area.
-- Email and password are real form inputs.
-- Login is a real submit button inside the form.
-- Submitting the login form routes to `/app` without password validation, backend logic, sessions, or API routes.
-- Guest Login routes to `/app` as a simple action/link.
-- Google, Facebook, and Apple OAuth options are visible with icons and do not perform login or provider calls.
-- No register/sign-up functionality is added.
-- Required reusable components are created.
-- No database, real OAuth, backend, or third-party auth functionality is added.
-- LF line-ending guidance is handled or documented.
-- CSP guidance is followed.
+- The app uses `src/app` and `src/components` for the route and component tree.
+- `/` redirects to `/login`.
+- `/login`, `/dashboard`, `/clients`, and `/billing` build and route correctly.
+- The login page uses the `(auth)` route group.
+- App placeholders use the `(app)` route group.
+- The login form has real email/password fields and a real submit button.
+- Existing Email, OAuth, and Guest entry behavior is preserved.
+- Successful login-related entry actions route to `/dashboard`.
+- Required reusable components exist in the correct component groups.
+- Imports, route targets, and TypeScript path aliases match the new structure.
+- `npm run lint` passes.
+- `npm tsc --noEmit` passes, or any command limitation is documented.

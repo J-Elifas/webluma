@@ -1,6 +1,6 @@
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
-import LoginCard from "@/components/LoginCard";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
+import LoginCard from "@/components/auth/LoginCard";
 
 export default function LoginPage() {
     return (
