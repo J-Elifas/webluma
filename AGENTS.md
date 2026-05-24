@@ -17,12 +17,15 @@ This is a Next.js App Router project using TypeScript and Tailwind v4.
 - Product requirements/spec: `SPEC.md`.
 
 Keep route-level orchestration in `src/app/`. Move shared presentation, controls, and layout building blocks to `src/components/`.
+Files inside `src/components/` must be presentational only: do not put state management, data fetching, routing decisions, auth calls, form submission logic, validation logic, or other behavior there. Place all feature logic and behavior in `src/app/` route, page, layout, or route-local controller files, then pass the resulting data, callbacks, and display state into components as props.
 
 ## Coding Standards
 
 - Use TypeScript for application code (`.ts` / `.tsx`).
 - Use 4-space indentation and keep components focused.
-- Use kebab-case file names for components and utilities, for example `placeholder-page.tsx`.
+- All React component files must use PascalCase, for example `LoginForm.tsx`, `LoginCard.tsx`, `IllustrationPanel.tsx`, and `PlaceholderPage.tsx`.
+- All React component function/export names must use PascalCase and should match the file name.
+- Use kebab-case file names for utilities, for example `placeholder-page.tsx`.
 - Follow App Router conventions for routes (`page.tsx`, `layout.tsx`, route groups, and dynamic segments like `[id]`).
 - Prefer server components by default. Add `"use client"` only when browser APIs, React state, effects, or event handlers are required.
 - Keep reusable logic and presentation independent of a single route unless the code is genuinely route-specific.

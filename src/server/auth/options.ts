@@ -1,6 +1,7 @@
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "../db/prisma";
+import { verifyPassword } from "./password";
 
 function normalizeEmail(email?: string) {
     return email?.trim().toLowerCase() ?? "";
@@ -30,20 +31,35 @@ export const authOptions: AuthOptions = {
                 const submittedPassword = credentials?.password ?? "";
 
                 if (!submittedEmail || !submittedPassword) {
-                    throw new Error("Invalid email or password!");
+                    return null;
                 }
 
                 const user = await prisma.user.findUnique({
                     where: {
                         email: submittedEmail,
                     },
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        password: true,
+                    },
                 });
 
-                console.log(user);
+                if (!user) {
+                    return null;
+                }
+
+                const isValidPassword = await verifyPassword(submittedPassword, user.password);
+
+                if (!isValidPassword) {
+                    return null;
+                }
 
                 return {
-                    id: "webluma-credentials-user",
-                    email: submittedEmail,
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
                 };
             },
         }),

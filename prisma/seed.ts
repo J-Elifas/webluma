@@ -15,13 +15,15 @@ const adapter = new PrismaMariaDb(databaseUrl);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    const hashedPassword = await hash("password123", 12);
+    const hashedPassword = await hash("test123", 12);
 
     await prisma.user.upsert({
         where: {
             email: "demo@example.com",
         },
-        update: {},
+        update: {
+            password: hashedPassword,
+        },
         create: {
             name: "Demo User",
             email: "demo@example.com",
