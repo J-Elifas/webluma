@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 import Link from "next/link";
 
 type ButtonVariant = "primary" | "secondary";
@@ -9,6 +9,7 @@ interface ButtonLinkProps {
     variant?: ButtonVariant;
     className?: string;
     ariaLabel?: string;
+    onClick?: MouseEventHandler<HTMLAnchorElement>;
 }
 
 export default function ButtonLink({
@@ -17,6 +18,7 @@ export default function ButtonLink({
     variant = "primary",
     className = "",
     ariaLabel,
+    onClick,
 }: ButtonLinkProps) {
     const baseClasses =
         "inline-flex w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition-colors duration-200";
@@ -30,6 +32,7 @@ export default function ButtonLink({
         <Link
             href={href}
             aria-label={ariaLabel}
+            onClick={onClick}
             className={`${baseClasses} ${variantClasses} ${className}`.trim()}
         >
             {children}

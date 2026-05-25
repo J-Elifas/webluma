@@ -24,6 +24,7 @@ interface LoginFormProps {
     onFieldChange: ChangeEventHandler<HTMLInputElement>;
     onSubmit: FormEventHandler<HTMLFormElement>;
     onOAuthContinue: () => void;
+    onGuestContinue: () => void;
 }
 
 function GoogleIcon() {
@@ -84,6 +85,7 @@ export default function LoginForm({
     onFieldChange,
     onSubmit,
     onOAuthContinue,
+    onGuestContinue,
 }: LoginFormProps) {
     return (
         <div className="flex flex-col justify-between gap-8 bg-white px-6 py-8 sm:px-8 lg:px-10 lg:py-12">
@@ -157,8 +159,9 @@ export default function LoginForm({
                                 type="button"
                                 aria-label={`Continue with ${option.name}`}
                                 title={`Continue with ${option.name}`}
+                                disabled={isSubmitting}
                                 onClick={onOAuthContinue}
-                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-mist-gray bg-white px-3 text-xs font-semibold text-midnight-slate shadow-[0_1px_0_rgba(15,23,42,0.02)] transition-colors duration-200 hover:bg-cloud-white focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 cursor-pointer"
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-mist-gray bg-white px-3 text-xs font-semibold text-midnight-slate shadow-[0_1px_0_rgba(15,23,42,0.02)] transition-colors duration-200 hover:bg-cloud-white focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                             >
                                 {option.icon}
                                 <span className="truncate">{option.name}</span>
@@ -167,7 +170,7 @@ export default function LoginForm({
                     </div>
                 </div>
 
-                <ButtonLink href={guestHref} variant="secondary">
+                <ButtonLink href={guestHref} variant="secondary" onClick={onGuestContinue}>
                     Continue as guest
                 </ButtonLink>
             </div>

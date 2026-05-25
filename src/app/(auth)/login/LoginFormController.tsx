@@ -7,6 +7,10 @@ import LoginForm, { type LoginFormErrors, type LoginFormValues } from "@/compone
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+interface LoginFormControllerProps {
+    onPendingChange?: (isPending: boolean) => void;
+}
+
 function validateLoginForm({ email, password }: LoginFormValues) {
     const errors: LoginFormErrors = {};
     const trimmedEmail = email.trim();
@@ -24,7 +28,7 @@ function validateLoginForm({ email, password }: LoginFormValues) {
     return errors;
 }
 
-export default function LoginFormController() {
+export default function LoginFormController({ onPendingChange }: LoginFormControllerProps) {
     const router = useRouter();
     const [formValues, setFormValues] = useState<LoginFormValues>({
         email: "",
@@ -34,8 +38,18 @@ export default function LoginFormController() {
     const [formError, setFormError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    function setPendingState(isPending: boolean) {
+        setIsSubmitting(isPending);
+        onPendingChange?.(isPending);
+    }
+
     function continueToApp() {
+        setPendingState(true);
         router.push("/dashboard");
+    }
+
+    function showNavigationPending() {
+        setPendingState(true);
     }
 
     function handleFieldChange(event: ChangeEvent<HTMLInputElement>) {
@@ -65,7 +79,8 @@ export default function LoginFormController() {
             return;
         }
 
-        setIsSubmitting(true);
+        setPendingState(true);
+        let shouldKeepPending = false;
 
         try {
             const result = await signIn("credentials", {
@@ -79,12 +94,15 @@ export default function LoginFormController() {
                 return;
             }
 
+            shouldKeepPending = true;
             continueToApp();
             router.refresh();
         } catch {
             setFormError("Unable to log in. Please try again.");
         } finally {
-            setIsSubmitting(false);
+            if (!shouldKeepPending) {
+                setPendingState(false);
+            }
         }
     }
 
@@ -98,6 +116,7 @@ export default function LoginFormController() {
             onFieldChange={handleFieldChange}
             onSubmit={handleSubmit}
             onOAuthContinue={continueToApp}
+            onGuestContinue={showNavigationPending}
         />
     );
 }
