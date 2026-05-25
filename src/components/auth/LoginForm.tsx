@@ -1,8 +1,4 @@
-"use client";
-
-import { useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import ButtonLink from "@/components/ui/ButtonLink";
+import type { ChangeEventHandler, FormEventHandler, ReactNode } from "react";
 import InputField from "@/components/ui/InputField";
 import SectionHeading from "@/components/ui/SectionHeading";
 
@@ -11,30 +7,22 @@ interface OAuthOption {
     icon: ReactNode;
 }
 
-interface LoginFormValues {
+export interface LoginFormValues {
     email: string;
     password: string;
 }
 
-type LoginFormErrors = Partial<Record<keyof LoginFormValues, string>>;
+export type LoginFormErrors = Partial<Record<keyof LoginFormValues, string>>;
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function validateLoginForm({ email, password }: LoginFormValues) {
-    const errors: LoginFormErrors = {};
-    const trimmedEmail = email.trim();
-
-    if (!trimmedEmail) {
-        errors.email = "Enter your email address.";
-    } else if (!emailPattern.test(trimmedEmail)) {
-        errors.email = "Enter a valid email address.";
-    }
-
-    if (!password.trim()) {
-        errors.password = "Enter your password.";
-    }
-
-    return errors;
+interface LoginFormProps {
+    formValues: LoginFormValues;
+    errors: LoginFormErrors;
+    formError: string;
+    isSubmitting: boolean;
+    onFieldChange: ChangeEventHandler<HTMLInputElement>;
+    onSubmit: FormEventHandler<HTMLFormElement>;
+    onOAuthContinue: () => void;
+    onGuestContinue: () => void;
 }
 
 function GoogleIcon() {
@@ -86,46 +74,16 @@ const oauthOptions: OAuthOption[] = [
     { name: "Apple", icon: <AppleIcon /> },
 ];
 
-export default function LoginForm() {
-    const router = useRouter();
-    const [formValues, setFormValues] = useState<LoginFormValues>({
-        email: "",
-        password: "",
-    });
-    const [errors, setErrors] = useState<LoginFormErrors>({});
-
-    function continueToApp() {
-        router.push("/dashboard");
-    }
-
-    function handleFieldChange(event: ChangeEvent<HTMLInputElement>) {
-        const fieldName = event.target.name as keyof LoginFormValues;
-        const { value } = event.target;
-
-        setFormValues((currentValues) => ({
-            ...currentValues,
-            [fieldName]: value,
-        }));
-
-        setErrors((currentErrors) => ({
-            ...currentErrors,
-            [fieldName]: undefined,
-        }));
-    }
-
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const nextErrors = validateLoginForm(formValues);
-
-        setErrors(nextErrors);
-
-        if (Object.keys(nextErrors).length > 0) {
-            return;
-        }
-
-        continueToApp();
-    }
-
+export default function LoginForm({
+    formValues,
+    errors,
+    formError,
+    isSubmitting,
+    onFieldChange,
+    onSubmit,
+    onOAuthContinue,
+    onGuestContinue,
+}: LoginFormProps) {
     return (
         <div className="flex flex-col justify-between gap-8 bg-white px-6 py-8 sm:px-8 lg:px-10 lg:py-12">
             <div className="space-y-8">
@@ -136,7 +94,7 @@ export default function LoginForm() {
                     <SectionHeading title="Welcome back" />
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                <form onSubmit={onSubmit} className="space-y-5" noValidate>
                     <div className="space-y-4">
                         <InputField
                             id="email"
@@ -146,7 +104,7 @@ export default function LoginForm() {
                             placeholder="editor@company.com"
                             autoComplete="email"
                             value={formValues.email}
-                            onChange={handleFieldChange}
+                            onChange={onFieldChange}
                             error={errors.email}
                         />
                         <InputField
@@ -157,7 +115,7 @@ export default function LoginForm() {
                             placeholder="Enter your password"
                             autoComplete="current-password"
                             value={formValues.password}
-                            onChange={handleFieldChange}
+                            onChange={onFieldChange}
                             error={errors.password}
                         />
                         <div className="flex justify-end">
@@ -172,10 +130,14 @@ export default function LoginForm() {
 
                     <button
                         type="submit"
-                        className="inline-flex w-full items-center justify-center rounded-xl bg-luma-blue px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_-18px_rgba(56,189,248,0.9)] transition-colors duration-200 hover:bg-[#1EA7E4] focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2"
+                        disabled={isSubmitting}
+                        className="inline-flex w-full items-center justify-center rounded-xl bg-luma-blue px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_-18px_rgba(56,189,248,0.9)] transition-colors duration-200 hover:bg-[#1EA7E4] focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-luma-blue/60"
                     >
-                        Login
+                        {isSubmitting ? "Logging in..." : "Login"}
                     </button>
+                    {formError ? (
+                        <p className="text-center text-sm font-medium text-red-500">{formError}</p>
+                    ) : null}
                 </form>
 
                 <div className="space-y-4">
@@ -194,8 +156,9 @@ export default function LoginForm() {
                                 type="button"
                                 aria-label={`Continue with ${option.name}`}
                                 title={`Continue with ${option.name}`}
-                                onClick={continueToApp}
-                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-mist-gray bg-white px-3 text-xs font-semibold text-midnight-slate shadow-[0_1px_0_rgba(15,23,42,0.02)] transition-colors duration-200 hover:bg-cloud-white focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 cursor-pointer"
+                                disabled={isSubmitting}
+                                onClick={onOAuthContinue}
+                                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-mist-gray bg-white px-3 text-xs font-semibold text-midnight-slate shadow-[0_1px_0_rgba(15,23,42,0.02)] transition-colors duration-200 hover:bg-cloud-white focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
                             >
                                 {option.icon}
                                 <span className="truncate">{option.name}</span>
@@ -204,9 +167,14 @@ export default function LoginForm() {
                     </div>
                 </div>
 
-                <ButtonLink href="/dashboard" variant="secondary">
+                <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={onGuestContinue}
+                    className="inline-flex w-full items-center justify-center rounded-xl border border-mist-gray bg-white px-5 py-3 text-sm font-semibold text-midnight-slate transition-colors duration-200 hover:bg-cloud-white focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                >
                     Continue as guest
-                </ButtonLink>
+                </button>
             </div>
         </div>
     );
