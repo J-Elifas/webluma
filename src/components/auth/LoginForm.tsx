@@ -1,5 +1,4 @@
 import type { ChangeEventHandler, FormEventHandler, ReactNode } from "react";
-import ButtonLink from "@/components/ui/ButtonLink";
 import InputField from "@/components/ui/InputField";
 import SectionHeading from "@/components/ui/SectionHeading";
 
@@ -20,7 +19,6 @@ interface LoginFormProps {
     errors: LoginFormErrors;
     formError: string;
     isSubmitting: boolean;
-    guestHref: string;
     onFieldChange: ChangeEventHandler<HTMLInputElement>;
     onSubmit: FormEventHandler<HTMLFormElement>;
     onOAuthContinue: () => void;
@@ -81,7 +79,6 @@ export default function LoginForm({
     errors,
     formError,
     isSubmitting,
-    guestHref,
     onFieldChange,
     onSubmit,
     onOAuthContinue,
@@ -170,9 +167,14 @@ export default function LoginForm({
                     </div>
                 </div>
 
-                <ButtonLink href={guestHref} variant="secondary" onClick={onGuestContinue}>
+                <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={onGuestContinue}
+                    className="inline-flex w-full items-center justify-center rounded-xl border border-mist-gray bg-white px-5 py-3 text-sm font-semibold text-midnight-slate transition-colors duration-200 hover:bg-cloud-white focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                >
                     Continue as guest
-                </ButtonLink>
+                </button>
             </div>
         </div>
     );

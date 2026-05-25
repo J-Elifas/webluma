@@ -48,10 +48,6 @@ export default function LoginFormController({ onPendingChange }: LoginFormContro
         router.push("/dashboard");
     }
 
-    function showNavigationPending() {
-        setPendingState(true);
-    }
-
     function handleFieldChange(event: ChangeEvent<HTMLInputElement>) {
         const fieldName = event.target.name as keyof LoginFormValues;
         const { value } = event.target;
@@ -106,17 +102,43 @@ export default function LoginFormController({ onPendingChange }: LoginFormContro
         }
     }
 
+    async function handleGuestContinue() {
+        setFormError("");
+        setPendingState(true);
+        let shouldKeepPending = false;
+
+        try {
+            const result = await signIn("guest", {
+                redirect: false,
+            });
+
+            if (!result?.ok || result.error) {
+                setFormError("Unable to continue as guest.");
+                return;
+            }
+
+            shouldKeepPending = true;
+            continueToApp();
+            router.refresh();
+        } catch {
+            setFormError("Unable to continue as guest.");
+        } finally {
+            if (!shouldKeepPending) {
+                setPendingState(false);
+            }
+        }
+    }
+
     return (
         <LoginForm
             formValues={formValues}
             errors={errors}
             formError={formError}
             isSubmitting={isSubmitting}
-            guestHref="/dashboard"
             onFieldChange={handleFieldChange}
             onSubmit={handleSubmit}
             onOAuthContinue={continueToApp}
-            onGuestContinue={showNavigationPending}
+            onGuestContinue={handleGuestContinue}
         />
     );
 }

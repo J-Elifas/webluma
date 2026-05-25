@@ -1,20 +1,64 @@
+"use client";
+
+import { useEffect } from "react";
+
 interface LoadingSpinnerProps {
     isVisible: boolean;
     label?: string;
+    fullscreen?: boolean;
     className?: string;
+}
+
+let activeScrollLocks = 0;
+let previousBodyOverflow = "";
+let previousDocumentOverflow = "";
+
+function lockPageScroll() {
+    if (activeScrollLocks === 0) {
+        previousBodyOverflow = document.body.style.overflow;
+        previousDocumentOverflow = document.documentElement.style.overflow;
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+    }
+
+    activeScrollLocks += 1;
+}
+
+function unlockPageScroll() {
+    activeScrollLocks = Math.max(activeScrollLocks - 1, 0);
+
+    if (activeScrollLocks === 0) {
+        document.body.style.overflow = previousBodyOverflow;
+        document.documentElement.style.overflow = previousDocumentOverflow;
+    }
 }
 
 export default function LoadingSpinner({
     isVisible,
     label = "Loading",
+    fullscreen = false,
     className = "",
 }: LoadingSpinnerProps) {
+    const positionClasses = fullscreen ? "fixed inset-0 z-50" : "absolute inset-0 z-30";
+
+    useEffect(() => {
+        if (!isVisible) {
+            return;
+        }
+
+        lockPageScroll();
+
+        return () => {
+            unlockPageScroll();
+        };
+    }, [isVisible]);
+
     return (
         <div
             role="status"
             aria-busy={isVisible}
             aria-hidden={!isVisible}
-            className={`absolute inset-0 z-30 flex items-center justify-center bg-cloud-white/85 backdrop-blur-sm transition-opacity duration-500 ease-out ${
+            className={`${positionClasses} flex items-center justify-center bg-cloud-white/85 backdrop-blur-sm transition-opacity duration-500 ease-out ${
                 isVisible ? "opacity-100" : "pointer-events-none opacity-0"
             } ${className}`.trim()}
         >

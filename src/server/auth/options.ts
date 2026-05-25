@@ -60,8 +60,38 @@ export const authOptions: AuthOptions = {
                     id: user.id,
                     name: user.name,
                     email: user.email,
+                    role: "USER",
+                };
+            },
+        }),
+        CredentialsProvider({
+            id: "guest",
+            name: "Guest",
+            credentials: {},
+            async authorize() {
+                return {
+                    id: "guest-user",
+                    name: "Guest User",
+                    email: "guest@example.com",
+                    role: "GUEST",
                 };
             },
         }),
     ],
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.role = user.role ?? "USER";
+            }
+
+            return token;
+        },
+        async session({ session, token }) {
+            session.user.id = token.id ?? "";
+            session.user.role = token.role ?? "USER";
+
+            return session;
+        },
+    },
 };

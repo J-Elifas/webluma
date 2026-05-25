@@ -13,7 +13,7 @@ export default function LoginPageController() {
             <LoginCard>
                 <LoginFormController onPendingChange={setIsLoading} />
             </LoginCard>
-            <LoadingSpinner isVisible={isLoading} label="Loading login operation" />
+            <LoadingSpinner isVisible={isLoading} label="Loading login operation" fullscreen />
         </main>
     );
 }
