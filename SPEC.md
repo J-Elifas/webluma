@@ -2,11 +2,11 @@
 
 ## Overview
 
-Webluma is a CMS web app built with Next.js App Router, TypeScript, npm, and Tailwind CSS v4.
+Webluma is a SaaS web app built with Next.js App Router, TypeScript, npm, and Tailwind CSS v4.
 
-The current milestone establishes the production route structure, a polished authentication entry page, and minimal protected app placeholders. Authentication must be implemented in a way that can later connect to real email/password submission, OAuth providers, and backend session handling without replacing the route structure or rebuilding the UI.
+The project establishes a production route structure, a polished authentication entry page, and protected application routes. Authentication must be implemented in a way that can connect to real email/password submission, OAuth providers, and backend session handling without replacing the route structure or rebuilding the UI.
 
-Backend auth services, databases, provider SDKs, and API integrations are outside this route-structure milestone.
+Backend auth services, databases, provider SDKs, and API integrations should be added behind stable route, server, and component boundaries when their product scope is defined.
 
 ## Routing
 
@@ -28,6 +28,10 @@ src/
         page.tsx
       billing/
         page.tsx
+    api/
+      auth/
+        [...nextauth]/
+          route.ts
 
   components/
     ui/
@@ -42,15 +46,26 @@ src/
       LoginCard.tsx
       LoginForm.tsx
       IllustrationPanel.tsx
+
+  server/
+    auth/
+      options.ts
+      password.ts
+    feature/
+      queries.ts
+      mutations.ts
+      types.ts
+    db/
+      prisma.ts
 ```
 
 Route groups do not appear in public URLs.
 
 - `/` redirects to `/login`.
 - `/login` renders the public authentication page from `src/app/(auth)/login/page.tsx`.
-- `/dashboard` renders the main post-login placeholder from `src/app/(app)/dashboard/page.tsx`.
-- `/clients` renders the clients placeholder from `src/app/(app)/clients/page.tsx`.
-- `/billing` renders the billing placeholder from `src/app/(app)/billing/page.tsx`.
+- `/dashboard` renders the main post-login app page from `src/app/(app)/dashboard/page.tsx`.
+- `/clients` renders the clients app page from `src/app/(app)/clients/page.tsx`.
+- `/billing` renders the billing app page from `src/app/(app)/billing/page.tsx`.
 
 Keep route-level concerns in `src/app` and reusable UI in `src/components`.
 
@@ -60,29 +75,29 @@ The login page must be production-facing in structure and copy:
 
 - Show the reusable Webluma logo.
 - Show a responsive two-column login card on desktop.
-- Include a CMS-themed illustration panel.
+- Include a SaaS-themed illustration panel.
 - Include real `email` and `password` inputs with labels, placeholders, validation affordances, and autocomplete attributes.
 - Use a real form submit button for email/password login.
 - Keep the existing Email, OAuth, and Guest entry behavior unless this spec is updated for backend integration work.
-- Route successful entry actions to `/dashboard` during this milestone.
-- Do not add registration, password reset, new provider callbacks, auth libraries, API routes, database access, or session storage in this milestone.
+- Route successful entry actions to `/dashboard`.
+- Do not add registration, password reset, new provider callbacks, auth libraries, API routes, database access, or session storage unless that scope is explicitly defined.
 
 When real auth is added later, the form submission path should be replaced with the project's chosen server action, route handler, or auth client while keeping the `/login` route and component boundaries stable.
 
 ## App Pages
 
-`/dashboard`, `/clients`, and `/billing` are protected-app placeholders for now. They should build correctly, use the shared theme, and avoid adding CMS feature workflows until the relevant product scope is defined.
+`/dashboard`, `/clients`, and `/billing` are protected app routes. They should build correctly, use the shared theme, and keep workflows aligned with defined product scope.
 
-The dashboard may show a small success/welcome indication. The clients and billing pages may remain minimal placeholders.
+Post-login pages should use production-ready route surfaces, even when a workflow is intentionally narrow or still being expanded.
 
 ## Visual Direction
 
-The authentication page should feel like a clean CMS/SaaS product:
+The authentication page should feel like a clean SaaS product:
 
 - Large Webluma logo near the top.
 - Centered login card with a rounded white container.
 - Creative left-side illustration/art panel.
-- Right-side login form with clear hierarchy and concise CMS-focused copy.
+- Right-side login form with clear hierarchy and concise SaaS-focused copy.
 - Modern spacing, subtle borders, and soft shadows.
 - Responsive layout that stacks or reduces the illustration on small screens.
 
@@ -153,7 +168,7 @@ Use LF line endings. Keep `.gitattributes` configured with:
 - `/` redirects to `/login`.
 - `/login`, `/dashboard`, `/clients`, and `/billing` build and route correctly.
 - The login page uses the `(auth)` route group.
-- App placeholders use the `(app)` route group.
+- Protected app pages use the `(app)` route group.
 - The login form has real email/password fields and a real submit button.
 - Existing Email, OAuth, and Guest entry behavior is preserved.
 - Successful login-related entry actions route to `/dashboard`.
