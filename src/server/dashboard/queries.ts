@@ -70,11 +70,6 @@ async function fetchDashboardSnapshot(isGuest: boolean): Promise<DashboardOvervi
             { name: "Bright Labs", plan: "Pro", status: "Past Due" },
             { name: "Orbit Agency", plan: "Enterprise", status: "Active" },
         ],
-        quickActions: [
-            { label: "Add Client", icon: "add-client" },
-            { label: "Create Invoice", icon: "create-invoice" },
-            { label: "View Billing", icon: "view-billing" },
-        ],
     };
 }
 

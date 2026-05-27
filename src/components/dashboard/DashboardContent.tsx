@@ -1,16 +1,17 @@
 import SectionHeading from "@/components/ui/SectionHeading";
 import DashboardMetricCards from "./DashboardMetricCards";
 import NeedsAttentionCard from "./NeedsAttentionCard";
-import QuickActionsCard from "./QuickActionsCard";
+import QuickActionsCard, { type QuickActionId } from "./QuickActionsCard";
 import RecentClientsTable from "./RecentClientsTable";
 import RevenueOverviewCard from "./RevenueOverviewCard";
 import type { DashboardOverview } from "@/server/dashboard/types";
 
 interface DashboardContentProps {
     overview: DashboardOverview;
+    onQuickActionSelect: (action: QuickActionId) => void;
 }
 
-export default function DashboardContent({ overview }: DashboardContentProps) {
+export default function DashboardContent({ overview, onQuickActionSelect }: DashboardContentProps) {
     return (
         <>
             <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -33,9 +34,9 @@ export default function DashboardContent({ overview }: DashboardContentProps) {
                 <NeedsAttentionCard items={overview.attentionItems} />
             </section>
 
-            <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <section className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
                 <RecentClientsTable clients={overview.recentClients} />
-                <QuickActionsCard actions={overview.quickActions} isGuest={overview.isGuest} />
+                <QuickActionsCard isGuest={overview.isGuest} onActionSelect={onQuickActionSelect} />
             </section>
         </>
     );

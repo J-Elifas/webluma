@@ -1,6 +1,5 @@
 export type DashboardMetricIcon = "revenue" | "clients" | "invoices" | "risk";
 export type DashboardTone = "blue" | "mint" | "amber" | "rose";
-export type QuickActionIcon = "add-client" | "create-invoice" | "view-billing";
 
 export interface DashboardMetric {
     label: string;
@@ -28,11 +27,6 @@ export interface DashboardClient {
     status: "Active" | "Past Due";
 }
 
-export interface DashboardQuickAction {
-    label: string;
-    icon: QuickActionIcon;
-}
-
 export interface DashboardOverview {
     isGuest: boolean;
     currentMrr: string;
@@ -40,5 +34,4 @@ export interface DashboardOverview {
     revenue: DashboardRevenuePoint[];
     attentionItems: DashboardAttentionItem[];
     recentClients: DashboardClient[];
-    quickActions: DashboardQuickAction[];
 }
