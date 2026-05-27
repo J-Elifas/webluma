@@ -1,4 +1,5 @@
 import { quickActionIcons } from "./dashboard-icons";
+import Button from "@/components/ui/Button";
 import type { DashboardQuickAction } from "@/server/dashboard/types";
 
 interface QuickActionsCardProps {
@@ -18,15 +19,16 @@ export default function QuickActionsCard({ actions, isGuest }: QuickActionsCardP
                     const Icon = quickActionIcons[action.icon];
 
                     return (
-                        <button
+                        <Button
                             key={action.label}
-                            type="button"
+                            variant="dark"
+                            size="md"
+                            isFullWidth
                             disabled={isGuest}
-                            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-midnight-slate px-4 py-3 text-sm font-bold text-white shadow-[0_16px_32px_-24px_rgba(15,23,42,0.85)] transition-colors hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-luma-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-gray/30 disabled:text-slate-gray"
+                            leftIcon={<Icon className="h-4 w-4" aria-hidden="true" />}
                         >
-                            <Icon className="h-4 w-4" aria-hidden="true" />
                             {action.label}
-                        </button>
+                        </Button>
                     );
                 })}
             </div>

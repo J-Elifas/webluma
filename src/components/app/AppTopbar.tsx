@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Bell, CalendarDays, Sparkles } from "lucide-react";
+import Button from "@/components/ui/Button";
 
 interface AppTopbarProps {
     mobileMenuButton?: ReactNode;
@@ -10,14 +11,15 @@ export default function AppTopbar({ mobileMenuButton, workspaceLabel }: AppTopba
     return (
         <header className="flex flex-col gap-4 border-b border-mist-gray/70 px-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div className="flex items-center gap-3">
-                <button
-                    type="button"
+                <Button
                     aria-label="View notifications"
-                    className="relative inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-mist-gray/70 bg-white text-slate-gray shadow-sm transition-colors hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue"
+                    variant="secondary"
+                    size="icon-lg"
+                    className="relative text-slate-gray hover:text-midnight-slate focus:ring-offset-0"
                 >
                     <Bell className="h-5 w-5" aria-hidden="true" />
                     <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-rose-500" />
-                </button>
+                </Button>
 
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-midnight-slate">Dashboard</p>
@@ -36,13 +38,16 @@ export default function AppTopbar({ mobileMenuButton, workspaceLabel }: AppTopba
                     <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                     {workspaceLabel}
                 </span>
-                <button
-                    type="button"
-                    className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-mist-gray/70 bg-white px-3.5 text-sm font-bold text-midnight-slate shadow-sm transition-colors hover:bg-cloud-white focus:outline-none focus:ring-2 focus:ring-luma-blue"
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    isFullWidth
+                    leftIcon={
+                        <CalendarDays className="h-4 w-4 text-slate-gray" aria-hidden="true" />
+                    }
                 >
-                    <CalendarDays className="h-4 w-4 text-slate-gray" aria-hidden="true" />
                     This Month
-                </button>
+                </Button>
             </div>
         </header>
     );

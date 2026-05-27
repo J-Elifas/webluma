@@ -108,7 +108,7 @@ function SidebarPanel({ onMobileClose, profileMenu }: SidebarPanelProps) {
                         })}
                     </nav>
 
-                    <div className="mt-auto pt-6">
+                    <div className="mt-6">
                         <div className="rounded-2xl border border-luma-blue/20 bg-luma-blue/10 p-4">
                             <div className="flex items-center gap-3">
                                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-luma-blue shadow-sm">
@@ -124,9 +124,9 @@ function SidebarPanel({ onMobileClose, profileMenu }: SidebarPanelProps) {
                                 </div>
                             </div>
                         </div>
-
-                        <div className="pt-3">{profileMenu}</div>
                     </div>
+
+                    <div className="mt-auto pt-3">{profileMenu}</div>
                 </div>
             </div>
         </aside>
