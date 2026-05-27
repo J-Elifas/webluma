@@ -97,6 +97,12 @@ export default function AppChromeController({
             return;
         }
 
+        const originalBodyOverflow = document.body.style.overflow;
+        const originalDocumentOverflow = document.documentElement.style.overflow;
+
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 handleMobileClose();
@@ -105,11 +111,25 @@ export default function AppChromeController({
 
         window.addEventListener("keydown", handleKeyDown);
 
-        return () => window.removeEventListener("keydown", handleKeyDown);
+        return () => {
+            document.body.style.overflow = originalBodyOverflow;
+            document.documentElement.style.overflow = originalDocumentOverflow;
+            window.removeEventListener("keydown", handleKeyDown);
+        };
     }, [handleMobileClose, isMobileOpen]);
 
     const handleMobileToggle = () => {
-        setIsMobileOpen((currentValue) => !currentValue);
+        setIsMobileOpen((currentValue) => {
+            if (!currentValue) {
+                const activeElement = document.activeElement;
+
+                if (activeElement instanceof HTMLElement) {
+                    activeElement.blur();
+                }
+            }
+
+            return !currentValue;
+        });
     };
 
     const profileMenu = (
@@ -149,14 +169,13 @@ export default function AppChromeController({
                 {children}
             </AppShell>
 
-            {!isInlineButtonVisible && !isMobileOpen ? (
-                <MobileSidebarButton
-                    ref={floatingButtonRef}
-                    isExpanded={isMobileOpen}
-                    onClick={handleMobileToggle}
-                    variant="floating"
-                />
-            ) : null}
+            <MobileSidebarButton
+                ref={floatingButtonRef}
+                isExpanded={isMobileOpen}
+                isVisible={!isInlineButtonVisible && !isMobileOpen}
+                onClick={handleMobileToggle}
+                variant="floating"
+            />
         </>
     );
 }

@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 
 interface MobileSidebarButtonProps {
     isExpanded: boolean;
+    isVisible?: boolean;
     onClick: () => void;
     variant?: "inline" | "floating";
 }
@@ -16,7 +17,18 @@ const variantClasses = {
 };
 
 const MobileSidebarButton = forwardRef<HTMLButtonElement, MobileSidebarButtonProps>(
-    function MobileSidebarButton({ isExpanded, onClick, variant = "inline" }, ref) {
+    function MobileSidebarButton(
+        { isExpanded, isVisible = true, onClick, variant = "inline" },
+        ref
+    ) {
+        const shouldAnimateVisibility = variant === "floating";
+        const isHidden = shouldAnimateVisibility && !isVisible;
+
+        const visibilityClasses =
+            shouldAnimateVisibility && !isVisible
+                ? "pointer-events-none translate-y-3 scale-95 opacity-0 duration-0"
+                : "translate-y-0 scale-100 opacity-100 duration-200";
+
         return (
             <button
                 ref={ref}
@@ -24,7 +36,8 @@ const MobileSidebarButton = forwardRef<HTMLButtonElement, MobileSidebarButtonPro
                 aria-label={isExpanded ? "Close sidebar" : "Open sidebar"}
                 aria-expanded={isExpanded}
                 onClick={onClick}
-                className={`inline-flex cursor-pointer items-center justify-center border transition-colors hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue lg:hidden ${variantClasses[variant]}`}
+                disabled={isHidden}
+                className={`inline-flex cursor-pointer items-center justify-center border transition-[background-color,color,opacity,transform] ease-out hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue motion-reduce:transition-none lg:hidden ${visibilityClasses} ${variantClasses[variant]}`}
             >
                 <Menu className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
             </button>
