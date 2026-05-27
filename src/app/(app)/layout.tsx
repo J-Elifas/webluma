@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import AppShell from "@/components/app/AppShell";
-import AppTopbar from "@/components/app/AppTopbar";
 import { authOptions } from "@/server/auth/options";
-import AppSidebarController from "./AppSidebarController";
+import AppChromeController from "./AppChromeController";
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -24,11 +22,8 @@ export default async function AppLayout({ children }: AppLayoutProps) {
     };
 
     return (
-        <AppShell
-            sidebar={<AppSidebarController user={user} />}
-            topbar={<AppTopbar workspaceLabel={isGuest ? "Guest View" : "Demo Workspace"} />}
-        >
+        <AppChromeController user={user} workspaceLabel={isGuest ? "Guest View" : "Demo Workspace"}>
             {children}
-        </AppShell>
+        </AppChromeController>
     );
 }

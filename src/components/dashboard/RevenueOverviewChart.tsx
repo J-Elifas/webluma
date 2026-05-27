@@ -73,6 +73,7 @@ export default function RevenueOverviewChart({ data }: RevenueOverviewChartProps
                     />
                     <Bar
                         dataKey="revenue"
+                        isAnimationActive={false}
                         radius={[12, 12, 6, 6]}
                         maxBarSize={48}
                         activeBar={{
