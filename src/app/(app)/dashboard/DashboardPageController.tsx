@@ -1,42 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import AddClientForm from "@/components/dashboard/AddClientForm";
+import { useState } from "react";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import type { QuickActionId } from "@/components/dashboard/QuickActionsCard";
-import Modal from "@/components/ui/Modal";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import type { DashboardOverview } from "@/server/dashboard/types";
+import AddClientController from "./AddClientController";
+import CreateInvoiceController from "./CreateInvoiceController";
+import ViewBillingController from "./ViewBillingController";
 
 interface DashboardPageControllerProps {
     overview: DashboardOverview;
 }
 
-const actionCopy: Record<QuickActionId, { title: string; description: string }> = {
-    "add-client": {
-        title: "Add client",
-        description: "Create a new client profile with contact and plan details.",
-    },
-    "create-invoice": {
-        title: "Create invoice",
-        description: "Prepare a manual invoice for a client and track its payment status.",
-    },
-    "view-billing": {
-        title: "View billing",
-        description: "Review invoices, payment status, and recurring revenue from one place.",
-    },
-};
-
 export default function DashboardPageController({ overview }: DashboardPageControllerProps) {
+    const [isLoading, setIsLoading] = useState(false);
     const [activeAction, setActiveAction] = useState<QuickActionId | null>(null);
     const [renderedAction, setRenderedAction] = useState<QuickActionId | null>(null);
-
-    const modalCopy = useMemo(() => {
-        if (!renderedAction) {
-            return null;
-        }
-
-        return actionCopy[renderedAction];
-    }, [renderedAction]);
 
     function handleQuickActionSelect(action: QuickActionId) {
         setRenderedAction(action);
@@ -50,21 +30,30 @@ export default function DashboardPageController({ overview }: DashboardPageContr
     return (
         <>
             <DashboardContent overview={overview} onQuickActionSelect={handleQuickActionSelect} />
-            <Modal
-                isOpen={activeAction !== null}
-                title={modalCopy?.title ?? ""}
-                description={modalCopy?.description}
-                size={renderedAction === "add-client" ? "lg" : "md"}
-                onClose={handleModalClose}
-            >
-                {renderedAction === "add-client" ? (
-                    <AddClientForm onCancel={handleModalClose} />
-                ) : (
-                    <div className="rounded-2xl bg-cloud-white px-4 py-3 text-sm font-bold text-slate-gray">
-                        Form inputs are not available for this action yet.
-                    </div>
-                )}
-            </Modal>
+
+            {renderedAction === "add-client" ? (
+                <AddClientController
+                    isOpen={activeAction === "add-client"}
+                    onClose={handleModalClose}
+                    onPendingChange={setIsLoading}
+                />
+            ) : null}
+
+            {renderedAction === "create-invoice" ? (
+                <CreateInvoiceController
+                    isOpen={activeAction === "create-invoice"}
+                    onClose={handleModalClose}
+                />
+            ) : null}
+
+            {renderedAction === "view-billing" ? (
+                <ViewBillingController
+                    isOpen={activeAction === "view-billing"}
+                    onClose={handleModalClose}
+                />
+            ) : null}
+
+            <LoadingSpinner isVisible={isLoading} label="Saving client" fullscreen />
         </>
     );
 }

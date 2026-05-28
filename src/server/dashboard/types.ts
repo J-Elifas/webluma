@@ -35,3 +35,33 @@ export interface DashboardOverview {
     attentionItems: DashboardAttentionItem[];
     recentClients: DashboardClient[];
 }
+
+export type DashboardClientPlan = "starter" | "pro" | "enterprise";
+
+export interface AddClientInput {
+    companyName: string;
+    contactPerson: string;
+    email: string;
+    phone: string;
+    website?: string;
+    plan: DashboardClientPlan;
+    monthlyFee: number;
+    startDate: string;
+    endDate?: string;
+    notes?: string;
+}
+
+type AddClientFormTextValues = {
+    [FieldName in keyof AddClientInput]-?: string;
+};
+
+export type AddClientFormValues = Omit<AddClientFormTextValues, "plan"> & {
+    plan: AddClientInput["plan"] | "";
+};
+
+export type AddClientFormErrors = Partial<Record<keyof AddClientFormValues, string>>;
+
+export interface AddClientMutationResult {
+    ok: boolean;
+    client?: AddClientInput;
+}

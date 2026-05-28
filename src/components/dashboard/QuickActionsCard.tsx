@@ -32,7 +32,7 @@ const quickActions: QuickActionItem[] = [
         action: "view-billing",
         icon: WalletCards,
     },
-]
+];
 
 export default function QuickActionsCard({ isGuest, onActionSelect }: QuickActionsCardProps) {
     return (

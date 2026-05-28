@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface LoadingSpinnerProps {
     isVisible: boolean;
@@ -39,7 +40,22 @@ export default function LoadingSpinner({
     fullscreen = false,
     className = "",
 }: LoadingSpinnerProps) {
-    const positionClasses = fullscreen ? "fixed inset-0 z-50" : "absolute inset-0 z-30";
+    const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+    const positionClasses = fullscreen ? "fixed inset-0 z-[90]" : "absolute inset-0 z-30";
+
+    useEffect(() => {
+        if (!fullscreen) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            setPortalRoot(document.body);
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [fullscreen]);
 
     useEffect(() => {
         if (!isVisible) {
@@ -53,7 +69,7 @@ export default function LoadingSpinner({
         };
     }, [isVisible]);
 
-    return (
+    const spinner = (
         <div
             role="status"
             aria-busy={isVisible}
@@ -66,4 +82,10 @@ export default function LoadingSpinner({
             <span className="sr-only">{label}</span>
         </div>
     );
+
+    if (fullscreen && portalRoot) {
+        return createPortal(spinner, portalRoot);
+    }
+
+    return spinner;
 }
