@@ -101,7 +101,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: "Input required!" }, { status: 400 });
     }
 
-    const result = await createDashboardClient(input);
-
+    const result = await createDashboardClient(input, session.user.id);
     return NextResponse.json(result);
 }
