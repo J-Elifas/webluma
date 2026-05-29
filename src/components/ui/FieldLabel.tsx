@@ -17,7 +17,7 @@ export default function FieldLabel({
     return (
         <label
             htmlFor={htmlFor}
-            className={cn("block text-sm font-semibold text-midnight-slate", className)}
+            className={cn("block text-sm font-medium leading-6 text-slate-gray", className)}
         >
             {children}
             {isRequired ? (

@@ -4,6 +4,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import AddClientForm from "@/components/dashboard/AddClientForm";
 import Modal from "@/components/ui/Modal";
+import { isValidDateValue, isValidHttpUrl } from "@/lib/utils";
 import type {
     AddClientFormErrors,
     AddClientFormValues,
@@ -18,7 +19,6 @@ interface AddClientControllerProps {
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const dashboardClientPlans: DashboardClientPlan[] = ["starter", "pro", "enterprise"];
 
 const initialFormValues: AddClientFormValues = {
@@ -33,34 +33,6 @@ const initialFormValues: AddClientFormValues = {
     endDate: "",
     notes: "",
 };
-
-function isValidUrl(value: string) {
-    try {
-        const url = new URL(value);
-
-        return url.protocol === "http:" || url.protocol === "https:";
-    } catch {
-        return false;
-    }
-}
-
-function isValidDateValue(value: string) {
-    const match = datePattern.exec(value);
-
-    if (!match) {
-        return false;
-    }
-
-    const [year, month, day] = value.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-
-    return (
-        !Number.isNaN(date.getTime()) &&
-        date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day
-    );
-}
 
 function validateAddClientForm(values: AddClientFormValues) {
     const errors: AddClientFormErrors = {};
@@ -89,7 +61,7 @@ function validateAddClientForm(values: AddClientFormValues) {
         errors.phone = "Enter a phone number.";
     }
 
-    if (trimmedWebsite && !isValidUrl(trimmedWebsite)) {
+    if (trimmedWebsite && !isValidHttpUrl(trimmedWebsite)) {
         errors.website = "Enter a valid website URL.";
     }
 

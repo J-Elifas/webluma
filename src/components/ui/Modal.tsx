@@ -159,8 +159,8 @@ export default function Modal({
                         : "animate-out fade-out zoom-out-95 slide-out-to-bottom-2 duration-150 ease-in"
                 )}
             >
-                <header className="flex items-start justify-between gap-4 border-b border-mist-gray/70 px-5 py-4">
-                    <div className="min-w-0">
+                <header className="flex items-start justify-between gap-4 border-b border-mist-gray/70 px-5 py-4 shadow-[0_-10px_20px_-0px_rgba(15,23,42,0.5)]">
+                    <div className="min-w-0 mb-3">
                         <h2 id={titleId} className="text-lg font-black text-midnight-slate">
                             {title}
                         </h2>

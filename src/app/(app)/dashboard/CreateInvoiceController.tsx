@@ -4,6 +4,12 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import CreateInvoiceForm from "@/components/dashboard/CreateInvoiceForm";
 import Modal from "@/components/ui/Modal";
+import {
+    addDaysToDateValue,
+    createInvoiceNumber,
+    formatDateValue,
+    isValidDateValue,
+} from "@/lib/utils";
 import type {
     CreateInvoiceFormErrors,
     CreateInvoiceFormValues,
@@ -19,60 +25,11 @@ interface CreateInvoiceControllerProps {
     onPendingChange?: (isPending: boolean) => void;
 }
 
-const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const planLabels: Record<DashboardClientPlan, string> = {
     starter: "Starter",
     pro: "Pro",
     enterprise: "Enterprise",
 };
-
-function formatDateValue(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-}
-
-function isValidDateValue(value: string) {
-    const match = datePattern.exec(value);
-
-    if (!match) {
-        return false;
-    }
-
-    const [year, month, day] = value.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-
-    return (
-        !Number.isNaN(date.getTime()) &&
-        date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day
-    );
-}
-
-function addDaysToDateValue(value: string, amount: number) {
-    if (!isValidDateValue(value)) {
-        return "";
-    }
-
-    const [year, month, day] = value.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-    date.setDate(date.getDate() + amount);
-
-    return formatDateValue(date);
-}
-
-function createInvoiceNumber() {
-    const now = new Date();
-    const date = formatDateValue(now).replaceAll("-", "");
-    const time = [now.getHours(), now.getMinutes(), now.getSeconds()]
-        .map((value) => String(value).padStart(2, "0"))
-        .join("");
-
-    return `INV-${date}-${time}`;
-}
 
 function createInitialFormValues(): CreateInvoiceFormValues {
     const issueDate = formatDateValue(new Date());
@@ -252,8 +209,8 @@ export default function CreateInvoiceController({
             [fieldName]: value,
             ...(fieldName === "periodStart"
                 ? {
-                    periodEnd: addDaysToDateValue(value, 30),
-                }
+                      periodEnd: addDaysToDateValue(value, 30),
+                  }
                 : {}),
         }));
         clearFieldErrors(fieldName === "periodStart" ? ["periodStart", "periodEnd"] : [fieldName]);
