@@ -65,3 +65,43 @@ export interface AddClientMutationResult {
     ok: boolean;
     client?: AddClientInput;
 }
+
+export interface DashboardInvoiceClientOption {
+    id: string;
+    companyName: string;
+    email: string;
+    plan: DashboardClientPlan;
+    monthlyFee: number;
+}
+
+export interface CreateInvoiceInput {
+    clientId: string;
+    invoiceNumber: string;
+    issueDate: string;
+    dueDate: string;
+    periodStart: string;
+    periodEnd: string;
+    amount: number;
+    notes?: string;
+}
+
+export interface CreateInvoiceFormValues {
+    clientId: string;
+    plan: string;
+    monthlyFee: string;
+    clientEmail: string;
+    periodStart: string;
+    periodEnd: string;
+    invoiceNumber: string;
+    issueDate: string;
+    dueDate: string;
+    amount: string;
+    notes: string;
+}
+
+export type CreateInvoiceFormErrors = Partial<Record<keyof CreateInvoiceFormValues, string>>;
+
+export interface CreateInvoiceMutationResult {
+    ok: boolean;
+    invoice?: CreateInvoiceInput;
+}

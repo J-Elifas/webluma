@@ -20,6 +20,8 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  invoices Invoice[]
+
   @@index([userId])
   @@index([email])
   @@index([plan])

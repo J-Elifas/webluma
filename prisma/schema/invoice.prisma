@@ -1,0 +1,24 @@
+model Invoice {
+  id       String @id @default(cuid())
+  clientId String
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  invoiceNumber String
+  amount        Decimal
+  status        InvoiceStatus
+  issueDate     DateTime
+  dueDate       DateTime
+  periodStart   DateTime
+  periodEnd     DateTime
+  notes         String?       @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum InvoiceStatus {
+  pending @map("PENDING")
+  paid    @map("PAID")
+  overdue @map("OVERDUE")
+}

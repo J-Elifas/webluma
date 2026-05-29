@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
-import type { DashboardOverview } from "./types";
+import { prisma } from "../db/prisma";
+import type { DashboardClientPlan, DashboardInvoiceClientOption, DashboardOverview } from "./types";
 
 async function fetchDashboardSnapshot(isGuest: boolean): Promise<DashboardOverview> {
     return {
@@ -77,4 +78,38 @@ export async function getDashboardOverview() {
     const session = await getServerSession(authOptions);
 
     return fetchDashboardSnapshot(session?.user.role === "GUEST");
+}
+
+export async function getDashboardInvoiceClientOptions(): Promise<DashboardInvoiceClientOption[]> {
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role === "GUEST") {
+        return [];
+    }
+
+    const clients = await prisma.client.findMany({
+        where: {
+            userId: session.user.id,
+        },
+        select: {
+            id: true,
+            companyName: true,
+            email: true,
+            plan: true,
+            monthlyFee: true,
+        },
+        orderBy: [
+            {
+                companyName: "asc",
+            },
+            {
+                createdAt: "desc",
+            },
+        ],
+    });
+
+    return clients.map((client) => ({
+        ...client,
+        plan: client.plan as DashboardClientPlan,
+    }));
 }
