@@ -65,6 +65,7 @@ export async function createDashboardInvoice(
 
     if (!client) {
         return {
+            message: "Cannot find specific client!",
             ok: false,
         };
     }
@@ -84,6 +85,7 @@ export async function createDashboardInvoice(
     });
 
     return {
+        message: "Invoice created!",
         ok: true,
         invoice: input,
     };

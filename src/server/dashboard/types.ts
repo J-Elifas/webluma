@@ -62,6 +62,7 @@ export type AddClientFormValues = Omit<AddClientFormTextValues, "plan"> & {
 export type AddClientFormErrors = Partial<Record<keyof AddClientFormValues, string>>;
 
 export interface AddClientMutationResult {
+    message?: string;
     ok: boolean;
     client?: AddClientInput;
 }
@@ -102,6 +103,7 @@ export interface CreateInvoiceFormValues {
 export type CreateInvoiceFormErrors = Partial<Record<keyof CreateInvoiceFormValues, string>>;
 
 export interface CreateInvoiceMutationResult {
+    message?: string;
     ok: boolean;
     invoice?: CreateInvoiceInput;
 }
