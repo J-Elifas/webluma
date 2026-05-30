@@ -15,6 +15,18 @@ export function formatDateValue(date: Date) {
     return `${year}-${month}-${day}`;
 }
 
+export function toUtcDate(dateValue: string) {
+    return new Date(`${dateValue}T00:00:00.000Z`);
+}
+
+export function toUtcDateValue(date: Date) {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
 export function isValidDateValue(value: string) {
     const match = dateValuePattern.exec(value);
 

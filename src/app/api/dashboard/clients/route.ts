@@ -102,5 +102,12 @@ export async function POST(request: Request) {
     }
 
     const result = await createDashboardClient(input, session.user.id);
+    if (!result.ok) {
+        return NextResponse.json(
+            { message: result.message || "Something went wrong!" },
+            { status: 400 }
+        );
+    }
+
     return NextResponse.json(result);
 }

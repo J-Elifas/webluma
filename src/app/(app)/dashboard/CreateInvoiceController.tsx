@@ -4,6 +4,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import CreateInvoiceForm from "@/components/dashboard/CreateInvoiceForm";
 import Modal from "@/components/ui/Modal";
+import type { StatusAlertTone } from "@/components/ui/StatusAlert";
 import {
     addDaysToDateValue,
     createInvoiceNumber,
@@ -23,6 +24,13 @@ interface CreateInvoiceControllerProps {
     onClose: () => void;
     clients: DashboardInvoiceClientOption[];
     onPendingChange?: (isPending: boolean) => void;
+    onStatusChange?: (status: CreateInvoiceStatus) => void;
+}
+
+interface CreateInvoiceStatus {
+    tone: StatusAlertTone;
+    title: string;
+    message: string;
 }
 
 const planLabels: Record<DashboardClientPlan, string> = {
@@ -30,6 +38,15 @@ const planLabels: Record<DashboardClientPlan, string> = {
     pro: "Pro",
     enterprise: "Enterprise",
 };
+const invoiceNumberPrefix = "INV-";
+
+function toInvoiceNumberSuffix(value: string) {
+    return value.trimStart().replace(/^INV-/i, "");
+}
+
+function toInvoiceNumberValue(value: string) {
+    return `${invoiceNumberPrefix}${value.trim()}`;
+}
 
 function createInitialFormValues(): CreateInvoiceFormValues {
     const issueDate = formatDateValue(new Date());
@@ -41,7 +58,7 @@ function createInitialFormValues(): CreateInvoiceFormValues {
         clientEmail: "",
         periodStart: "",
         periodEnd: "",
-        invoiceNumber: createInvoiceNumber(),
+        invoiceNumber: toInvoiceNumberSuffix(createInvoiceNumber()),
         issueDate,
         dueDate: addDaysToDateValue(issueDate, 7),
         amount: "",
@@ -108,7 +125,7 @@ function validateCreateInvoiceForm(
 function toCreateInvoiceInput(values: CreateInvoiceFormValues): CreateInvoiceInput {
     return {
         clientId: values.clientId,
-        invoiceNumber: values.invoiceNumber.trim(),
+        invoiceNumber: toInvoiceNumberValue(values.invoiceNumber),
         issueDate: values.issueDate,
         dueDate: values.dueDate,
         periodStart: values.periodStart,
@@ -118,16 +135,24 @@ function toCreateInvoiceInput(values: CreateInvoiceFormValues): CreateInvoiceInp
     };
 }
 
+async function readInvoiceResponse(response: Response) {
+    try {
+        return (await response.json()) as { ok?: boolean; message?: string };
+    } catch {
+        return {};
+    }
+}
+
 export default function CreateInvoiceController({
     clients,
     isOpen,
     onClose,
     onPendingChange,
+    onStatusChange,
 }: CreateInvoiceControllerProps) {
     const router = useRouter();
     const [formValues, setFormValues] = useState<CreateInvoiceFormValues>(createInitialFormValues);
     const [errors, setErrors] = useState<CreateInvoiceFormErrors>({});
-    const [formError, setFormError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     function setPendingState(isPending: boolean) {
@@ -135,8 +160,15 @@ export default function CreateInvoiceController({
         onPendingChange?.(isPending);
     }
 
+    function setSubmitError(message: string) {
+        onStatusChange?.({
+            tone: "error",
+            title: "Invoice not created",
+            message,
+        });
+    }
+
     function clearFieldError(fieldName: keyof CreateInvoiceFormValues) {
-        setFormError("");
         setErrors((currentErrors) => ({
             ...currentErrors,
             [fieldName]: undefined,
@@ -144,7 +176,6 @@ export default function CreateInvoiceController({
     }
 
     function clearFieldErrors(fieldNames: (keyof CreateInvoiceFormValues)[]) {
-        setFormError("");
         setErrors((currentErrors) =>
             fieldNames.reduce(
                 (nextErrors, fieldName) => ({
@@ -163,7 +194,6 @@ export default function CreateInvoiceController({
 
         setFormValues(createInitialFormValues());
         setErrors({});
-        setFormError("");
         onClose();
     }
 
@@ -183,7 +213,10 @@ export default function CreateInvoiceController({
 
     function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
         const fieldName = event.target.name as keyof CreateInvoiceFormValues;
-        const { value } = event.target;
+        const value =
+            fieldName === "invoiceNumber"
+                ? toInvoiceNumberSuffix(event.target.value)
+                : event.target.value;
 
         setFormValues((currentValues) => ({
             ...currentValues,
@@ -220,7 +253,6 @@ export default function CreateInvoiceController({
         event.preventDefault();
         const nextErrors = validateCreateInvoiceForm(formValues, clients);
 
-        setFormError("");
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
@@ -238,23 +270,23 @@ export default function CreateInvoiceController({
                 body: JSON.stringify(toCreateInvoiceInput(formValues)),
             });
 
-            if (!response.ok) {
-                setFormError("Unable to save invoice. Please try again.");
+            const result = await readInvoiceResponse(response);
+
+            if (!response.ok || !result.ok) {
+                setSubmitError(result.message || "Unable to save invoice. Please try again.");
                 return;
             }
 
-            const result = (await response.json()) as { ok?: boolean };
-
-            if (!result.ok) {
-                setFormError("Unable to save invoice. Please try again.");
-                return;
-            }
-
+            onStatusChange?.({
+                tone: "success",
+                title: "Invoice created",
+                message: result.message || "Invoice created!",
+            });
             setFormValues(createInitialFormValues());
             onClose();
             router.refresh();
         } catch {
-            setFormError("Unable to save invoice. Please try again.");
+            setSubmitError("Unable to save invoice. Please try again.");
         } finally {
             setPendingState(false);
         }
@@ -272,7 +304,6 @@ export default function CreateInvoiceController({
                 clients={clients}
                 values={formValues}
                 errors={errors}
-                formError={formError}
                 isSubmitting={isSubmitting}
                 onCancel={handleModalClose}
                 onClientChange={handleClientChange}

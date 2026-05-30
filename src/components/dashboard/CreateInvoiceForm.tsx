@@ -5,6 +5,7 @@ import Button from "@/components/ui/Button";
 import DateInputField from "@/components/ui/DateInputField";
 import EmailInputField from "@/components/ui/EmailInputField";
 import NumberInputField from "@/components/ui/NumberInputField";
+import PrefixedTextInputField from "@/components/ui/PrefixedTextInputField";
 import SelectField, { type SelectFieldOption } from "@/components/ui/SelectField";
 import TextareaField from "@/components/ui/TextareaField";
 import TextInputField from "@/components/ui/TextInputField";
@@ -18,7 +19,6 @@ interface CreateInvoiceFormProps {
     clients: DashboardInvoiceClientOption[];
     values: CreateInvoiceFormValues;
     errors: CreateInvoiceFormErrors;
-    formError: string;
     isSubmitting: boolean;
     onCancel: () => void;
     onClientChange: (value: string) => void;
@@ -31,7 +31,6 @@ interface CreateInvoiceFormProps {
 export default function CreateInvoiceForm({
     clients,
     errors,
-    formError,
     isSubmitting,
     onCancel,
     onClientChange,
@@ -135,11 +134,12 @@ export default function CreateInvoiceForm({
                     Invoice Details
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <TextInputField
+                    <PrefixedTextInputField
                         id="invoice-number"
                         name="invoiceNumber"
                         label="Invoice Number"
-                        placeholder="INV-20260529-001"
+                        prefix="INV-"
+                        placeholder="1001"
                         value={values.invoiceNumber}
                         onChange={onInputChange}
                         error={errors.invoiceNumber}
@@ -196,9 +196,6 @@ export default function CreateInvoiceForm({
             />
 
             <div className="flex flex-col-reverse gap-3 border-t border-mist-gray/70 pt-5 sm:flex-row sm:justify-end">
-                {formError ? (
-                    <p className="text-sm font-medium text-red-500 sm:mr-auto">{formError}</p>
-                ) : null}
                 <Button
                     type="button"
                     variant="secondary"

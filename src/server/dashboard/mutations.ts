@@ -6,44 +6,43 @@ import type {
 } from "./types";
 import { prisma } from "../db/prisma";
 import { ClientPlan, InvoiceStatus } from "@prisma/client";
+import { formatDateValue, toUtcDate, toUtcDateValue } from "@/lib/utils";
 
-function toUtcDate(dateValue: string) {
-    return new Date(`${dateValue}T00:00:00.000Z`);
-}
-
-function toDateValue(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-}
+const activeInvoiceStatuses = [InvoiceStatus.pending, InvoiceStatus.overdue];
 
 function getInitialInvoiceStatus(dueDate: string) {
-    return dueDate < toDateValue(new Date()) ? InvoiceStatus.overdue : InvoiceStatus.pending;
+    return dueDate < formatDateValue(new Date()) ? InvoiceStatus.overdue : InvoiceStatus.pending;
 }
 
 export async function createDashboardClient(
     input: AddClientInput,
     userId: string
 ): Promise<AddClientMutationResult> {
-    await prisma.client.create({
-        data: {
-            userId,
-            companyName: input.companyName,
-            contactPerson: input.contactPerson,
-            email: input.email,
-            phone: input.phone,
-            website: input.website,
-            plan: input.plan as ClientPlan,
-            monthlyFee: input.monthlyFee,
-            startDate: toUtcDate(input.startDate),
-            endDate: input.endDate ? toUtcDate(input.endDate) : undefined,
-            notes: input.notes,
-        },
-    });
+    try {
+        await prisma.client.create({
+            data: {
+                userId,
+                companyName: input.companyName,
+                contactPerson: input.contactPerson,
+                email: input.email,
+                phone: input.phone,
+                website: input.website,
+                plan: input.plan as ClientPlan,
+                monthlyFee: input.monthlyFee,
+                startDate: toUtcDate(input.startDate),
+                endDate: input.endDate ? toUtcDate(input.endDate) : undefined,
+                notes: input.notes,
+            },
+        });
+    } catch {
+        return {
+            message: "Something went wrong!",
+            ok: false,
+        };
+    }
 
     return {
+        message: "Client created!",
         ok: true,
         client: input,
     };
@@ -70,6 +69,41 @@ export async function createDashboardInvoice(
         };
     }
 
+    const periodStart = toUtcDate(input.periodStart);
+    const periodEnd = toUtcDate(input.periodEnd);
+    const overlappingInvoice = await prisma.invoice.findFirst({
+        where: {
+            clientId: client.id,
+            status: {
+                in: activeInvoiceStatuses,
+            },
+            periodStart: {
+                lte: periodEnd,
+            },
+            periodEnd: {
+                gte: periodStart,
+            },
+        },
+        select: {
+            invoiceNumber: true,
+            periodStart: true,
+            periodEnd: true,
+        },
+        orderBy: {
+            periodEnd: "desc",
+        },
+    });
+
+    if (overlappingInvoice) {
+        const existingStart = toUtcDateValue(overlappingInvoice.periodStart);
+        const existingEnd = toUtcDateValue(overlappingInvoice.periodEnd);
+
+        return {
+            message: `This client already has an active invoice (${overlappingInvoice.invoiceNumber}) for ${existingStart} to ${existingEnd}. Start the next invoice after ${existingEnd}.`,
+            ok: false,
+        };
+    }
+
     await prisma.invoice.create({
         data: {
             clientId: client.id,
@@ -78,8 +112,8 @@ export async function createDashboardInvoice(
             status: getInitialInvoiceStatus(input.dueDate),
             issueDate: toUtcDate(input.issueDate),
             dueDate: toUtcDate(input.dueDate),
-            periodStart: toUtcDate(input.periodStart),
-            periodEnd: toUtcDate(input.periodEnd),
+            periodStart,
+            periodEnd,
             notes: input.notes,
         },
     });

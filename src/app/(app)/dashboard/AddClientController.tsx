@@ -4,6 +4,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import AddClientForm from "@/components/dashboard/AddClientForm";
 import Modal from "@/components/ui/Modal";
+import type { StatusAlertTone } from "@/components/ui/StatusAlert";
 import { isValidDateValue, isValidHttpUrl } from "@/lib/utils";
 import type {
     AddClientFormErrors,
@@ -16,6 +17,13 @@ interface AddClientControllerProps {
     isOpen: boolean;
     onClose: () => void;
     onPendingChange?: (isPending: boolean) => void;
+    onStatusChange?: (status: AddClientStatus) => void;
+}
+
+interface AddClientStatus {
+    tone: StatusAlertTone;
+    title: string;
+    message: string;
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -105,15 +113,23 @@ function toAddClientInput(values: AddClientFormValues): AddClientInput {
     };
 }
 
+async function readClientResponse(response: Response) {
+    try {
+        return (await response.json()) as { ok?: boolean; message?: string };
+    } catch {
+        return {};
+    }
+}
+
 export default function AddClientController({
     isOpen,
     onClose,
     onPendingChange,
+    onStatusChange,
 }: AddClientControllerProps) {
     const router = useRouter();
     const [formValues, setFormValues] = useState<AddClientFormValues>(initialFormValues);
     const [errors, setErrors] = useState<AddClientFormErrors>({});
-    const [formError, setFormError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     function setPendingState(isPending: boolean) {
@@ -121,8 +137,15 @@ export default function AddClientController({
         onPendingChange?.(isPending);
     }
 
+    function setSubmitError(message: string) {
+        onStatusChange?.({
+            tone: "error",
+            title: "Client not created",
+            message,
+        });
+    }
+
     function clearFieldError(fieldName: keyof AddClientFormValues) {
-        setFormError("");
         setErrors((currentErrors) => ({
             ...currentErrors,
             [fieldName]: undefined,
@@ -136,7 +159,6 @@ export default function AddClientController({
 
         setFormValues(initialFormValues);
         setErrors({});
-        setFormError("");
         onClose();
     }
 
@@ -186,7 +208,6 @@ export default function AddClientController({
         event.preventDefault();
         const nextErrors = validateAddClientForm(formValues);
 
-        setFormError("");
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
@@ -204,23 +225,23 @@ export default function AddClientController({
                 body: JSON.stringify(toAddClientInput(formValues)),
             });
 
-            if (!response.ok) {
-                setFormError("Unable to save client. Please try again.");
+            const result = await readClientResponse(response);
+
+            if (!response.ok || !result.ok) {
+                setSubmitError(result.message || "Unable to save client. Please try again.");
                 return;
             }
 
-            const result = (await response.json()) as { ok?: boolean };
-
-            if (!result.ok) {
-                setFormError("Unable to save client. Please try again.");
-                return;
-            }
-
+            onStatusChange?.({
+                tone: "success",
+                title: "Client created",
+                message: result.message || "Client created!",
+            });
             setFormValues(initialFormValues);
             onClose();
             router.refresh();
         } catch {
-            setFormError("Unable to save client. Please try again.");
+            setSubmitError("Unable to save client. Please try again.");
         } finally {
             setPendingState(false);
         }
@@ -237,7 +258,6 @@ export default function AddClientController({
             <AddClientForm
                 values={formValues}
                 errors={errors}
-                formError={formError}
                 isSubmitting={isSubmitting}
                 onCancel={handleModalClose}
                 onDateChange={handleDateChange}

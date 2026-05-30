@@ -15,7 +15,6 @@ import type { AddClientFormErrors, AddClientFormValues } from "@/server/dashboar
 interface AddClientFormProps {
     values: AddClientFormValues;
     errors: AddClientFormErrors;
-    formError: string;
     isSubmitting: boolean;
     onCancel: () => void;
     onDateChange: (fieldName: "startDate" | "endDate", value: string) => void;
@@ -33,7 +32,6 @@ const planOptions: SelectFieldOption[] = [
 
 export default function AddClientForm({
     errors,
-    formError,
     isSubmitting,
     onCancel,
     onDateChange,
@@ -181,9 +179,6 @@ export default function AddClientForm({
             />
 
             <div className="flex flex-col-reverse gap-3 border-t border-mist-gray/70 pt-5 sm:flex-row sm:justify-end">
-                {formError ? (
-                    <p className="text-sm font-medium text-red-500 sm:mr-auto">{formError}</p>
-                ) : null}
                 <Button
                     type="button"
                     variant="secondary"
