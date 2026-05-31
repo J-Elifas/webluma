@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import AppShell from "@/components/app/AppShell";
 import AppSidebar from "@/components/app/AppSidebar";
 import AppTopbar from "@/components/app/AppTopbar";
@@ -18,16 +19,24 @@ interface AppChromeControllerProps {
     workspaceLabel: string;
 }
 
+const pageTitles: Record<string, string> = {
+    "/billing": "Billing",
+    "/clients": "Clients",
+    "/dashboard": "Dashboard",
+};
+
 export default function AppChromeController({
     children,
     user,
     workspaceLabel,
 }: AppChromeControllerProps) {
+    const pathname = usePathname();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isInlineButtonVisible, setIsInlineButtonVisible] = useState(true);
     const inlineButtonRef = useRef<HTMLButtonElement | null>(null);
     const floatingButtonRef = useRef<HTMLButtonElement | null>(null);
     const isInlineButtonVisibleRef = useRef(true);
+    const pageTitle = pageTitles[pathname] ?? "Workspace";
 
     useEffect(() => {
         let animationFrame: number | null = null;
@@ -154,6 +163,7 @@ export default function AppChromeController({
             <AppShell
                 sidebar={
                     <AppSidebar
+                        currentPath={pathname}
                         isMobileOpen={isMobileOpen}
                         onMobileClose={handleMobileClose}
                         profileMenu={profileMenu}
@@ -161,6 +171,7 @@ export default function AppChromeController({
                 }
                 topbar={
                     <AppTopbar
+                        pageTitle={pageTitle}
                         workspaceLabel={workspaceLabel}
                         mobileMenuButton={inlineMenuButton}
                     />

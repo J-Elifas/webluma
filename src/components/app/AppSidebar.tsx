@@ -2,6 +2,7 @@
 
 import type { ReactNode, TouchEvent } from "react";
 import { useRef } from "react";
+import Link from "next/link";
 import {
     CreditCard,
     FileText,
@@ -19,31 +20,43 @@ import Logo from "@/components/ui/Logo";
 interface SidebarItem {
     label: string;
     icon: LucideIcon;
-    active?: boolean;
+    href?: string;
 }
 
 const sidebarItems: SidebarItem[] = [
-    { label: "Dashboard", icon: LayoutDashboard, active: true },
-    { label: "Clients", icon: Users },
+    { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+    { label: "Clients", icon: Users, href: "/clients" },
     { label: "Invoices", icon: FileText },
     { label: "Subscriptions", icon: CreditCard },
-    { label: "Billing", icon: WalletCards },
+    { label: "Billing", icon: WalletCards, href: "/billing" },
     { label: "Reports", icon: LineChart },
     { label: "Settings", icon: Settings },
 ];
 
 interface AppSidebarProps {
+    currentPath: string;
     isMobileOpen: boolean;
     profileMenu: ReactNode;
     onMobileClose: () => void;
 }
 
 interface SidebarPanelProps {
+    currentPath: string;
     onMobileClose: () => void;
     profileMenu: ReactNode;
+    shouldCloseOnNavigate?: boolean;
 }
 
-function SidebarPanel({ onMobileClose, profileMenu }: SidebarPanelProps) {
+function getIsActivePath(currentPath: string, href: string) {
+    return currentPath === href || currentPath.startsWith(`${href}/`);
+}
+
+function SidebarPanel({
+    currentPath,
+    onMobileClose,
+    profileMenu,
+    shouldCloseOnNavigate = false,
+}: SidebarPanelProps) {
     return (
         <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-[1.75rem] border border-mist-gray/70 bg-white/95 p-4 shadow-[0_28px_70px_-48px_rgba(15,23,42,0.55)] backdrop-blur lg:bg-white/88">
             <div className="min-h-0 flex-1 overflow-y-auto">
@@ -77,32 +90,48 @@ function SidebarPanel({ onMobileClose, profileMenu }: SidebarPanelProps) {
                     <nav className="mt-6 space-y-1.5" aria-label="Dashboard navigation">
                         {sidebarItems.map((item) => {
                             const Icon = item.icon;
+                            const isActive = item.href
+                                ? getIsActivePath(currentPath, item.href)
+                                : false;
+                            const itemClassName = `flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-bold transition-colors ${
+                                isActive
+                                    ? "bg-midnight-slate text-white shadow-[0_16px_32px_-24px_rgba(15,23,42,0.85)]"
+                                    : item.href
+                                      ? "text-slate-gray hover:bg-cloud-white hover:text-midnight-slate"
+                                      : "text-slate-gray disabled:cursor-not-allowed disabled:opacity-75"
+                            }`;
+                            const iconClassName = `h-4 w-4 ${
+                                isActive ? "text-luma-blue" : "text-slate-gray"
+                            }`;
 
-                            return (
+                            return item.href ? (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    aria-current={isActive ? "page" : undefined}
+                                    onClick={shouldCloseOnNavigate ? onMobileClose : undefined}
+                                    className={itemClassName}
+                                >
+                                    <span className="flex items-center gap-3">
+                                        <Icon className={iconClassName} aria-hidden="true" />
+                                        {item.label}
+                                    </span>
+                                </Link>
+                            ) : (
                                 <button
                                     key={item.label}
                                     type="button"
-                                    aria-current={item.active ? "page" : undefined}
-                                    aria-disabled={!item.active}
-                                    disabled={!item.active}
-                                    className={`flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-bold transition-colors ${item.active
-                                        ? "bg-midnight-slate text-white shadow-[0_16px_32px_-24px_rgba(15,23,42,0.85)]"
-                                        : "text-slate-gray disabled:cursor-not-allowed disabled:opacity-75"
-                                        }`}
+                                    aria-disabled
+                                    disabled
+                                    className={itemClassName}
                                 >
                                     <span className="flex items-center gap-3">
-                                        <Icon
-                                            className={`h-4 w-4 ${item.active ? "text-luma-blue" : "text-slate-gray"
-                                                }`}
-                                            aria-hidden="true"
-                                        />
+                                        <Icon className={iconClassName} aria-hidden="true" />
                                         {item.label}
                                     </span>
-                                    {!item.active ? (
-                                        <span className="rounded-full bg-cloud-white px-2 py-0.5 text-[10px] font-bold uppercase text-slate-gray">
-                                            Soon
-                                        </span>
-                                    ) : null}
+                                    <span className="rounded-full bg-cloud-white px-2 py-0.5 text-[10px] font-bold uppercase text-slate-gray">
+                                        Soon
+                                    </span>
                                 </button>
                             );
                         })}
@@ -133,7 +162,12 @@ function SidebarPanel({ onMobileClose, profileMenu }: SidebarPanelProps) {
     );
 }
 
-export default function AppSidebar({ isMobileOpen, profileMenu, onMobileClose }: AppSidebarProps) {
+export default function AppSidebar({
+    currentPath,
+    isMobileOpen,
+    profileMenu,
+    onMobileClose,
+}: AppSidebarProps) {
     const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
     const handleTouchStart = (event: TouchEvent<HTMLDivElement>) => {
@@ -172,8 +206,9 @@ export default function AppSidebar({ isMobileOpen, profileMenu, onMobileClose }:
             <div
                 aria-hidden={!isMobileOpen}
                 inert={!isMobileOpen ? true : undefined}
-                className={`fixed inset-0 z-[60] lg:hidden ${isMobileOpen ? "pointer-events-auto" : "pointer-events-none"
-                    }`}
+                className={`fixed inset-0 z-[60] lg:hidden ${
+                    isMobileOpen ? "pointer-events-auto" : "pointer-events-none"
+                }`}
             >
                 <button
                     type="button"
@@ -181,23 +216,34 @@ export default function AppSidebar({ isMobileOpen, profileMenu, onMobileClose }:
                     onClick={onMobileClose}
                     onMouseDown={(event) => event.preventDefault()}
                     tabIndex={isMobileOpen ? 0 : -1}
-                    className={`absolute inset-0 bg-midnight-slate/35 transition-opacity duration-300 ease-out ${isMobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
-                        }`}
+                    className={`absolute inset-0 bg-midnight-slate/35 transition-opacity duration-300 ease-out ${
+                        isMobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
+                    }`}
                 />
                 <div
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
-                    className={`absolute right-0 top-0 flex h-full w-[min(21rem,calc(100vw-1.5rem))] flex-col p-3 transition-transform duration-300 ease-out will-change-transform ${isMobileOpen ? "translate-x-0" : "pointer-events-none translate-x-full"
-                        }`}
+                    className={`absolute right-0 top-0 flex h-full w-[min(21rem,calc(100vw-1.5rem))] flex-col p-3 transition-transform duration-300 ease-out will-change-transform ${
+                        isMobileOpen ? "translate-x-0" : "pointer-events-none translate-x-full"
+                    }`}
                 >
                     <div className="min-h-0 flex-1">
-                        <SidebarPanel onMobileClose={onMobileClose} profileMenu={profileMenu} />
+                        <SidebarPanel
+                            currentPath={currentPath}
+                            onMobileClose={onMobileClose}
+                            profileMenu={profileMenu}
+                            shouldCloseOnNavigate
+                        />
                     </div>
                 </div>
             </div>
 
             <div className="hidden lg:sticky lg:top-6 lg:block lg:h-[calc(100vh-3rem)] lg:w-72 lg:shrink-0">
-                <SidebarPanel onMobileClose={onMobileClose} profileMenu={profileMenu} />
+                <SidebarPanel
+                    currentPath={currentPath}
+                    onMobileClose={onMobileClose}
+                    profileMenu={profileMenu}
+                />
             </div>
         </>
     );

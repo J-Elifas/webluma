@@ -4,10 +4,11 @@ import Button from "@/components/ui/Button";
 
 interface AppTopbarProps {
     mobileMenuButton?: ReactNode;
+    pageTitle: string;
     workspaceLabel: string;
 }
 
-export default function AppTopbar({ mobileMenuButton, workspaceLabel }: AppTopbarProps) {
+export default function AppTopbar({ mobileMenuButton, pageTitle, workspaceLabel }: AppTopbarProps) {
     return (
         <header className="flex flex-col gap-4 border-b border-mist-gray/70 px-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div className="flex items-center gap-3">
@@ -22,7 +23,7 @@ export default function AppTopbar({ mobileMenuButton, workspaceLabel }: AppTopba
                 </Button>
 
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-midnight-slate">Dashboard</p>
+                    <p className="text-sm font-bold text-midnight-slate">{pageTitle}</p>
                     <p className="truncate text-xs font-medium text-slate-gray">
                         Monday, May 25, 2026
                     </p>

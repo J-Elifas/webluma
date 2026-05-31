@@ -1,5 +1,5 @@
-import AppPlaceholder from "@/components/app/AppPlaceholder";
+import BillingContent from "@/components/billing/BillingContent";
 
 export default function BillingPage() {
-    return <AppPlaceholder title="Billing" />;
+    return <BillingContent />;
 }
