@@ -1,10 +1,13 @@
-export default function DashboardPage() {
+import DashboardPageController from "./DashboardPageController";
+import { getDashboardInvoiceClientOptions, getDashboardOverview } from "@/server/dashboard/queries";
+
+export default async function DashboardPage() {
+    const [overview, invoiceClientOptions] = await Promise.all([
+        getDashboardOverview(),
+        getDashboardInvoiceClientOptions(),
+    ]);
+
     return (
-        <main className="flex min-h-screen items-center justify-center bg-white px-4">
-            <div className="text-center">
-                <p className="text-sm font-medium text-slate-gray">Login successful</p>
-                <h1 className="mt-1 text-xl font-bold text-midnight-slate">Welcome to Webluma</h1>
-            </div>
-        </main>
+        <DashboardPageController overview={overview} invoiceClientOptions={invoiceClientOptions} />
     );
 }
