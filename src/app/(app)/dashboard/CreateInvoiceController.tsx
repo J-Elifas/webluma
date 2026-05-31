@@ -24,6 +24,7 @@ interface CreateInvoiceControllerProps {
     isOpen: boolean;
     onClose: () => void;
     clients: DashboardInvoiceClientOption[];
+    onAfterClose?: () => void;
     onPendingChange?: (isPending: boolean) => void;
     onStatusChange?: (status: CreateInvoiceStatus) => void;
 }
@@ -167,6 +168,7 @@ async function readInvoiceResponse(response: Response) {
 export default function CreateInvoiceController({
     clients,
     isOpen,
+    onAfterClose,
     onClose,
     onPendingChange,
     onStatusChange,
@@ -213,9 +215,13 @@ export default function CreateInvoiceController({
             return;
         }
 
+        onClose();
+    }
+
+    function handleModalAfterClose() {
         setFormValues(createInitialFormValues());
         setErrors({});
-        onClose();
+        onAfterClose?.();
     }
 
     function handleClientChange(value: string) {
@@ -304,7 +310,6 @@ export default function CreateInvoiceController({
                 title: "Invoice created",
                 message: result.message || "Invoice created!",
             });
-            setFormValues(createInitialFormValues());
             onClose();
             router.refresh();
         } catch {
@@ -321,6 +326,7 @@ export default function CreateInvoiceController({
             description="Prepare a manual invoice for a client and track its payment status."
             size="lg"
             onClose={handleModalClose}
+            onAfterClose={handleModalAfterClose}
         >
             <CreateInvoiceForm
                 clients={clients}

@@ -17,6 +17,7 @@ import type {
 interface AddClientControllerProps {
     isOpen: boolean;
     onClose: () => void;
+    onAfterClose?: () => void;
     onPendingChange?: (isPending: boolean) => void;
     onStatusChange?: (status: AddClientStatus) => void;
 }
@@ -148,6 +149,7 @@ async function readClientResponse(response: Response) {
 
 export default function AddClientController({
     isOpen,
+    onAfterClose,
     onClose,
     onPendingChange,
     onStatusChange,
@@ -182,9 +184,13 @@ export default function AddClientController({
             return;
         }
 
+        onClose();
+    }
+
+    function handleModalAfterClose() {
         setFormValues(initialFormValues);
         setErrors({});
-        onClose();
+        onAfterClose?.();
     }
 
     function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -263,7 +269,6 @@ export default function AddClientController({
                 title: "Client created",
                 message: result.message || "Client created!",
             });
-            setFormValues(initialFormValues);
             onClose();
             router.refresh();
         } catch {
@@ -280,6 +285,7 @@ export default function AddClientController({
             description="Create a new client profile with contact and plan details."
             size="lg"
             onClose={handleModalClose}
+            onAfterClose={handleModalAfterClose}
         >
             <AddClientForm
                 values={formValues}
