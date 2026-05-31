@@ -2,6 +2,7 @@ import type { DashboardClient } from "@/server/dashboard/types";
 
 interface RecentClientsTableProps {
     clients: DashboardClient[];
+    emptyStateMessage: string;
 }
 
 function getStatusClass(status: DashboardClient["status"]) {
@@ -9,17 +10,30 @@ function getStatusClass(status: DashboardClient["status"]) {
         return "bg-rose-100 text-rose-600";
     }
 
+    if (status === "Inactive") {
+        return "bg-slate-100 text-slate-600";
+    }
+
+    if (status === "Lead") {
+        return "bg-luma-blue/10 text-sky-700";
+    }
+
     return "bg-soft-mint/50 text-teal-700";
 }
 
-export default function RecentClientsTable({ clients }: RecentClientsTableProps) {
+export default function RecentClientsTable({
+    clients,
+    emptyStateMessage,
+}: RecentClientsTableProps) {
+    const hasClients = clients.length > 0;
+
     return (
         <article className="overflow-hidden rounded-[1.25rem] border border-mist-gray/70 bg-white shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
             <div className="flex flex-col gap-2 border-b border-mist-gray/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 className="text-lg font-black text-midnight-slate">Recent clients</h2>
                     <p className="mt-1 text-sm font-medium text-slate-gray">
-                        Latest client plan and billing status.
+                        Latest client plan and contract status.
                     </p>
                 </div>
             </div>
@@ -34,25 +48,36 @@ export default function RecentClientsTable({ clients }: RecentClientsTableProps)
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-mist-gray/60">
-                        {clients.map((client) => (
-                            <tr key={client.name}>
-                                <td className="px-5 py-4 text-sm font-bold text-midnight-slate">
-                                    {client.name}
-                                </td>
-                                <td className="px-5 py-4 text-sm font-semibold text-slate-gray">
-                                    {client.plan}
-                                </td>
-                                <td className="px-5 py-4">
-                                    <span
-                                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${getStatusClass(
-                                            client.status
-                                        )}`}
-                                    >
-                                        {client.status}
-                                    </span>
+                        {hasClients ? (
+                            clients.map((client) => (
+                                <tr key={client.id}>
+                                    <td className="px-5 py-4 text-sm font-bold text-midnight-slate">
+                                        {client.name}
+                                    </td>
+                                    <td className="px-5 py-4 text-sm font-semibold text-slate-gray">
+                                        {client.plan}
+                                    </td>
+                                    <td className="px-5 py-4">
+                                        <span
+                                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${getStatusClass(
+                                                client.status
+                                            )}`}
+                                        >
+                                            {client.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td
+                                    className="px-5 py-8 text-center text-sm font-semibold text-slate-gray"
+                                    colSpan={3}
+                                >
+                                    {emptyStateMessage}
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>

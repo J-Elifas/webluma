@@ -1,9 +1,58 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
+import { formatDateValue } from "@/lib/utils";
 import { prisma } from "../db/prisma";
-import type { DashboardClientPlan, DashboardInvoiceClientOption, DashboardOverview } from "./types";
+import { dashboardClientPlanLabels, getDashboardClientStatus } from "./client-status";
+import type {
+    DashboardClient,
+    DashboardClientPlan,
+    DashboardInvoiceClientOption,
+    DashboardOverview,
+} from "./types";
 
-async function fetchDashboardSnapshot(isGuest: boolean): Promise<DashboardOverview> {
+const recentClientLimit = 6;
+const recentClientsEmptyMessage = "No clients yet. Add a client to see contract status here.";
+const guestRecentClientsEmptyMessage =
+    "Guest mode is view-only. Client records will appear here after signing in.";
+
+interface DashboardSnapshotOptions {
+    isGuest: boolean;
+    clients: DashboardClient[];
+    recentClientsEmptyMessage: string;
+}
+
+async function fetchRecentDashboardClients(userId: string): Promise<DashboardClient[]> {
+    const today = formatDateValue(new Date());
+    const clients = await prisma.client.findMany({
+        where: {
+            userId,
+        },
+        select: {
+            id: true,
+            companyName: true,
+            plan: true,
+            startDate: true,
+            endDate: true,
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+        take: recentClientLimit,
+    });
+
+    return clients.map((client) => ({
+        id: client.id,
+        name: client.companyName,
+        plan: dashboardClientPlanLabels[client.plan],
+        status: getDashboardClientStatus(client, today),
+    }));
+}
+
+async function fetchDashboardSnapshot({
+    isGuest,
+    clients,
+    recentClientsEmptyMessage,
+}: DashboardSnapshotOptions): Promise<DashboardOverview> {
     return {
         isGuest,
         currentMrr: "$9,840",
@@ -25,7 +74,7 @@ async function fetchDashboardSnapshot(isGuest: boolean): Promise<DashboardOvervi
             {
                 label: "Pending Invoices",
                 value: "7",
-                helper: "$4,280 waiting",
+                helper: "$4,280 outstanding",
                 icon: "invoices",
                 tone: "amber",
             },
@@ -65,19 +114,30 @@ async function fetchDashboardSnapshot(isGuest: boolean): Promise<DashboardOvervi
                 tone: "mint",
             },
         ],
-        recentClients: [
-            { name: "Acme Studio", plan: "Pro", status: "Active" },
-            { name: "Nova Creative", plan: "Starter", status: "Active" },
-            { name: "Bright Labs", plan: "Pro", status: "Past Due" },
-            { name: "Orbit Agency", plan: "Enterprise", status: "Active" },
-        ],
+        clients,
+        recentClientsEmptyMessage,
     };
 }
 
 export async function getDashboardOverview() {
     const session = await getServerSession(authOptions);
+    const isGuest = !session || session.user.role === "GUEST";
 
-    return fetchDashboardSnapshot(session?.user.role === "GUEST");
+    if (isGuest) {
+        return fetchDashboardSnapshot({
+            isGuest,
+            clients: [],
+            recentClientsEmptyMessage: guestRecentClientsEmptyMessage,
+        });
+    }
+
+    const clients = await fetchRecentDashboardClients(session.user.id);
+
+    return fetchDashboardSnapshot({
+        isGuest,
+        clients,
+        recentClientsEmptyMessage,
+    });
 }
 
 export async function getDashboardInvoiceClientOptions(): Promise<DashboardInvoiceClientOption[]> {

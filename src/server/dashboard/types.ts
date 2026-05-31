@@ -22,9 +22,10 @@ export interface DashboardAttentionItem {
 }
 
 export interface DashboardClient {
+    id: string;
     name: string;
     plan: string;
-    status: "Active" | "Past Due";
+    status: "Lead" | "Inactive" | "Past Due" | "Active";
 }
 
 export interface DashboardOverview {
@@ -33,7 +34,8 @@ export interface DashboardOverview {
     metrics: DashboardMetric[];
     revenue: DashboardRevenuePoint[];
     attentionItems: DashboardAttentionItem[];
-    recentClients: DashboardClient[];
+    clients: DashboardClient[];
+    recentClientsEmptyMessage: string;
 }
 
 export type DashboardClientPlan = "starter" | "pro" | "enterprise";

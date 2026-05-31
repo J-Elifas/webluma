@@ -35,7 +35,10 @@ export default function DashboardContent({ overview, onQuickActionSelect }: Dash
             </section>
 
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
-                <RecentClientsTable clients={overview.recentClients} />
+                <RecentClientsTable
+                    clients={overview.clients}
+                    emptyStateMessage={overview.recentClientsEmptyMessage}
+                />
                 <QuickActionsCard isGuest={overview.isGuest} onActionSelect={onQuickActionSelect} />
             </section>
         </>
