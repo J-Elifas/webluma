@@ -2,10 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
 import { getOptionalStringField, getStringField, isRecord, isValidDateValue } from "@/lib/utils";
-import { createDashboardClient } from "@/server/dashboard/mutations";
-import type { AddClientInput, DashboardClientPlan } from "@/server/dashboard/types";
-
-const dashboardClientPlans: DashboardClientPlan[] = ["starter", "pro", "enterprise"];
+import { createClient } from "@/server/clients/mutations";
+import { clientPlans } from "@/server/clients/options";
+import type { AddClientInput, ClientPlan } from "@/server/clients/types";
 
 function parseAddClientInput(body: unknown): AddClientInput | null {
     if (!isRecord(body)) {
@@ -16,7 +15,7 @@ function parseAddClientInput(body: unknown): AddClientInput | null {
     const contactPerson = getStringField(body, "contactPerson");
     const email = getStringField(body, "email").toLowerCase();
     const phone = getStringField(body, "phone");
-    const plan = getStringField(body, "plan") as DashboardClientPlan;
+    const plan = getStringField(body, "plan") as ClientPlan;
     const monthlyFee = Number(body.monthlyFee);
     const startDate = getStringField(body, "startDate");
     const endDate = getOptionalStringField(body, "endDate");
@@ -26,7 +25,7 @@ function parseAddClientInput(body: unknown): AddClientInput | null {
         !contactPerson ||
         !email ||
         !phone ||
-        !dashboardClientPlans.includes(plan) ||
+        !clientPlans.includes(plan) ||
         !Number.isFinite(monthlyFee) ||
         monthlyFee < 0 ||
         !isValidDateValue(startDate) ||
@@ -67,7 +66,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: "Input required!" }, { status: 400 });
     }
 
-    const result = await createDashboardClient(input, session.user.id);
+    const result = await createClient(input, session.user.id);
     if (!result.ok) {
         return NextResponse.json(
             { message: result.message || "Something went wrong!" },

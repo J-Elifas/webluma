@@ -12,12 +12,12 @@ import {
     formatDateValue,
     isValidDateValue,
 } from "@/lib/utils";
+import { clientPlanLabels } from "@/server/clients/options";
 import type {
     CreateInvoiceFormErrors,
     CreateInvoiceFormValues,
     CreateInvoiceInput,
     InvoiceClientOption,
-    InvoiceClientPlan,
 } from "@/server/invoices/types";
 
 interface CreateInvoiceControllerProps {
@@ -35,11 +35,6 @@ interface CreateInvoiceStatus {
     message: string;
 }
 
-const planLabels: Record<InvoiceClientPlan, string> = {
-    starter: "Starter",
-    pro: "Pro",
-    enterprise: "Enterprise",
-};
 const invoiceNumberPrefix = "INV-";
 const createInvoiceFieldOrder = [
     "clientId",
@@ -230,7 +225,7 @@ export default function CreateInvoiceController({
         setFormValues((currentValues) => ({
             ...currentValues,
             clientId: selectedClient?.id ?? "",
-            plan: selectedClient ? planLabels[selectedClient.plan] : "",
+            plan: selectedClient ? clientPlanLabels[selectedClient.plan] : "",
             monthlyFee: selectedClient ? String(selectedClient.monthlyFee) : "",
             clientEmail: selectedClient?.email ?? "",
             amount: selectedClient ? String(selectedClient.monthlyFee) : "",

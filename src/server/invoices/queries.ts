@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
+import type { ClientPlan } from "@/server/clients/types";
 import { prisma } from "@/server/db/prisma";
-import type { InvoiceClientOption, InvoiceClientPlan } from "./types";
+import type { InvoiceClientOption } from "./types";
 
 export async function getInvoiceClientOptions(): Promise<InvoiceClientOption[]> {
     const session = await getServerSession(authOptions);
@@ -33,6 +34,6 @@ export async function getInvoiceClientOptions(): Promise<InvoiceClientOption[]> 
 
     return clients.map((client) => ({
         ...client,
-        plan: client.plan as InvoiceClientPlan,
+        plan: client.plan as ClientPlan,
     }));
 }

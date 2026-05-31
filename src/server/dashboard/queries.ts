@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
 import { formatDateValue } from "@/lib/utils";
+import { clientPlanLabels } from "@/server/clients/options";
 import { prisma } from "../db/prisma";
-import { dashboardClientPlanLabels, getDashboardClientStatus } from "./client-status";
+import { getDashboardClientStatus } from "./client-status";
 import type { DashboardClient, DashboardOverview } from "./types";
 
 const recentClientLimit = 6;
@@ -38,7 +39,7 @@ async function fetchRecentDashboardClients(userId: string): Promise<DashboardCli
     return clients.map((client) => ({
         id: client.id,
         name: client.companyName,
-        plan: dashboardClientPlanLabels[client.plan],
+        plan: clientPlanLabels[client.plan],
         status: getDashboardClientStatus(client, today),
     }));
 }

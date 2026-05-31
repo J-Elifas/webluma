@@ -1,9 +1,9 @@
-import type { AddClientInput, AddClientMutationResult } from "./types";
-import { prisma } from "../db/prisma";
-import { ClientPlan } from "@prisma/client";
+import { ClientPlan as PrismaClientPlan } from "@prisma/client";
 import { toUtcDate } from "@/lib/utils";
+import { prisma } from "@/server/db/prisma";
+import type { AddClientInput, AddClientMutationResult } from "./types";
 
-export async function createDashboardClient(
+export async function createClient(
     input: AddClientInput,
     userId: string
 ): Promise<AddClientMutationResult> {
@@ -16,7 +16,7 @@ export async function createDashboardClient(
                 email: input.email,
                 phone: input.phone,
                 website: input.website,
-                plan: input.plan as ClientPlan,
+                plan: input.plan as PrismaClientPlan,
                 monthlyFee: input.monthlyFee,
                 startDate: toUtcDate(input.startDate),
                 endDate: input.endDate ? toUtcDate(input.endDate) : undefined,

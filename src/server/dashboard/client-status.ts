@@ -1,11 +1,5 @@
 import { toUtcDateValue } from "@/lib/utils";
-import type { DashboardClient, DashboardClientPlan } from "./types";
-
-export const dashboardClientPlanLabels: Record<DashboardClientPlan, string> = {
-    starter: "Starter",
-    pro: "Pro",
-    enterprise: "Enterprise",
-};
+import type { DashboardClient } from "./types";
 
 interface DashboardClientStatusInput {
     startDate: Date;

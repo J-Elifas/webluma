@@ -7,7 +7,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
 import type { DashboardOverview } from "@/server/dashboard/types";
 import type { InvoiceClientOption } from "@/server/invoices/types";
-import AddClientController from "./AddClientController";
+import AddClientController from "../clients/AddClientController";
 import CreateInvoiceController from "../invoices/CreateInvoiceController";
 import ViewBillingController from "./ViewBillingController";
 

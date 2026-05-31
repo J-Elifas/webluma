@@ -1,10 +1,10 @@
-export type InvoiceClientPlan = "starter" | "pro" | "enterprise";
+import type { ClientPlan } from "@/server/clients/types";
 
 export interface InvoiceClientOption {
     id: string;
     companyName: string;
     email: string;
-    plan: InvoiceClientPlan;
+    plan: ClientPlan;
     monthlyFee: number;
 }
 

@@ -2,17 +2,18 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import AddClientForm from "@/components/dashboard/AddClientForm";
+import AddClientForm from "@/components/clients/AddClientForm";
 import Modal from "@/components/ui/Modal";
 import type { StatusAlertTone } from "@/components/ui/StatusAlert";
 import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
 import { isValidDateValue, isValidHttpUrl } from "@/lib/utils";
+import { clientPlans } from "@/server/clients/options";
 import type {
     AddClientFormErrors,
     AddClientFormValues,
     AddClientInput,
-    DashboardClientPlan,
-} from "@/server/dashboard/types";
+    ClientPlan,
+} from "@/server/clients/types";
 
 interface AddClientControllerProps {
     isOpen: boolean;
@@ -29,7 +30,6 @@ interface AddClientStatus {
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const dashboardClientPlans: DashboardClientPlan[] = ["starter", "pro", "enterprise"];
 const addClientFieldOrder = [
     "companyName",
     "contactPerson",
@@ -131,7 +131,7 @@ function toAddClientInput(values: AddClientFormValues): AddClientInput {
         email: values.email.trim().toLowerCase(),
         phone: values.phone.trim(),
         website: values.website.trim() || undefined,
-        plan: values.plan as DashboardClientPlan,
+        plan: values.plan as ClientPlan,
         monthlyFee: Number(values.monthlyFee),
         startDate: values.startDate,
         endDate: values.endDate || undefined,
@@ -216,7 +216,7 @@ export default function AddClientController({
     }
 
     function handlePlanChange(value: AddClientFormValues["plan"]) {
-        if (value && !dashboardClientPlans.includes(value)) {
+        if (value && !clientPlans.includes(value)) {
             return;
         }
 
@@ -249,7 +249,7 @@ export default function AddClientController({
         setPendingState(true);
 
         try {
-            const response = await fetch("/api/dashboard/clients", {
+            const response = await fetch("/api/clients", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
