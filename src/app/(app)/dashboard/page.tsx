@@ -1,10 +1,11 @@
 import DashboardPageController from "./DashboardPageController";
-import { getDashboardInvoiceClientOptions, getDashboardOverview } from "@/server/dashboard/queries";
+import { getDashboardOverview } from "@/server/dashboard/queries";
+import { getInvoiceClientOptions } from "@/server/invoices/queries";
 
 export default async function DashboardPage() {
     const [overview, invoiceClientOptions] = await Promise.all([
         getDashboardOverview(),
-        getDashboardInvoiceClientOptions(),
+        getInvoiceClientOptions(),
     ]);
 
     return (

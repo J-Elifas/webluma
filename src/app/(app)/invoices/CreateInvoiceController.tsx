@@ -2,9 +2,10 @@
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import CreateInvoiceForm from "@/components/dashboard/CreateInvoiceForm";
+import CreateInvoiceForm from "@/components/invoices/CreateInvoiceForm";
 import Modal from "@/components/ui/Modal";
 import type { StatusAlertTone } from "@/components/ui/StatusAlert";
+import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
 import {
     addDaysToDateValue,
     createInvoiceNumber,
@@ -15,15 +16,14 @@ import type {
     CreateInvoiceFormErrors,
     CreateInvoiceFormValues,
     CreateInvoiceInput,
-    DashboardClientPlan,
-    DashboardInvoiceClientOption,
-} from "@/server/dashboard/types";
-import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
+    InvoiceClientOption,
+    InvoiceClientPlan,
+} from "@/server/invoices/types";
 
 interface CreateInvoiceControllerProps {
     isOpen: boolean;
     onClose: () => void;
-    clients: DashboardInvoiceClientOption[];
+    clients: InvoiceClientOption[];
     onAfterClose?: () => void;
     onPendingChange?: (isPending: boolean) => void;
     onStatusChange?: (status: CreateInvoiceStatus) => void;
@@ -35,7 +35,7 @@ interface CreateInvoiceStatus {
     message: string;
 }
 
-const planLabels: Record<DashboardClientPlan, string> = {
+const planLabels: Record<InvoiceClientPlan, string> = {
     starter: "Starter",
     pro: "Pro",
     enterprise: "Enterprise",
@@ -90,7 +90,7 @@ function createInitialFormValues(): CreateInvoiceFormValues {
 
 function validateCreateInvoiceForm(
     values: CreateInvoiceFormValues,
-    clients: DashboardInvoiceClientOption[]
+    clients: InvoiceClientOption[]
 ) {
     const errors: CreateInvoiceFormErrors = {};
     const amount = Number(values.amount);
@@ -290,7 +290,7 @@ export default function CreateInvoiceController({
         setPendingState(true);
 
         try {
-            const response = await fetch("/api/dashboard/invoices", {
+            const response = await fetch("/api/invoices", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

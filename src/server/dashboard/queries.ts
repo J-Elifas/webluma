@@ -3,12 +3,7 @@ import { authOptions } from "@/server/auth/options";
 import { formatDateValue } from "@/lib/utils";
 import { prisma } from "../db/prisma";
 import { dashboardClientPlanLabels, getDashboardClientStatus } from "./client-status";
-import type {
-    DashboardClient,
-    DashboardClientPlan,
-    DashboardInvoiceClientOption,
-    DashboardOverview,
-} from "./types";
+import type { DashboardClient, DashboardOverview } from "./types";
 
 const recentClientLimit = 6;
 const recentClientsEmptyMessage = "No clients yet. Add a client to see contract status here.";
@@ -138,38 +133,4 @@ export async function getDashboardOverview() {
         clients,
         recentClientsEmptyMessage,
     });
-}
-
-export async function getDashboardInvoiceClientOptions(): Promise<DashboardInvoiceClientOption[]> {
-    const session = await getServerSession(authOptions);
-
-    if (!session || session.user.role === "GUEST") {
-        return [];
-    }
-
-    const clients = await prisma.client.findMany({
-        where: {
-            userId: session.user.id,
-        },
-        select: {
-            id: true,
-            companyName: true,
-            email: true,
-            plan: true,
-            monthlyFee: true,
-        },
-        orderBy: [
-            {
-                companyName: "asc",
-            },
-            {
-                createdAt: "desc",
-            },
-        ],
-    });
-
-    return clients.map((client) => ({
-        ...client,
-        plan: client.plan as DashboardClientPlan,
-    }));
 }

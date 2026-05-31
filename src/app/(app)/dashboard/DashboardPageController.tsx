@@ -5,14 +5,15 @@ import DashboardContent from "@/components/dashboard/DashboardContent";
 import type { QuickActionId } from "@/components/dashboard/QuickActionsCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
-import type { DashboardInvoiceClientOption, DashboardOverview } from "@/server/dashboard/types";
+import type { DashboardOverview } from "@/server/dashboard/types";
+import type { InvoiceClientOption } from "@/server/invoices/types";
 import AddClientController from "./AddClientController";
-import CreateInvoiceController from "./CreateInvoiceController";
+import CreateInvoiceController from "../invoices/CreateInvoiceController";
 import ViewBillingController from "./ViewBillingController";
 
 interface DashboardPageControllerProps {
     overview: DashboardOverview;
-    invoiceClientOptions: DashboardInvoiceClientOption[];
+    invoiceClientOptions: InvoiceClientOption[];
 }
 
 interface DashboardAlert {

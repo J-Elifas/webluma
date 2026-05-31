@@ -1,45 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
+import { getOptionalStringField, getStringField, isRecord, isValidDateValue } from "@/lib/utils";
 import { createDashboardClient } from "@/server/dashboard/mutations";
 import type { AddClientInput, DashboardClientPlan } from "@/server/dashboard/types";
 
 const dashboardClientPlans: DashboardClientPlan[] = ["starter", "pro", "enterprise"];
-const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === "object" && value !== null;
-}
-
-function getStringField(body: Record<string, unknown>, fieldName: string) {
-    const value = body[fieldName];
-
-    return typeof value === "string" ? value.trim() : "";
-}
-
-function getOptionalStringField(body: Record<string, unknown>, fieldName: string) {
-    const value = getStringField(body, fieldName);
-
-    return value || undefined;
-}
-
-function isDateValue(value: string) {
-    const match = datePattern.exec(value);
-
-    if (!match) {
-        return false;
-    }
-
-    const [year, month, day] = value.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-
-    return (
-        !Number.isNaN(date.getTime()) &&
-        date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day
-    );
-}
 
 function parseAddClientInput(body: unknown): AddClientInput | null {
     if (!isRecord(body)) {
@@ -63,8 +29,8 @@ function parseAddClientInput(body: unknown): AddClientInput | null {
         !dashboardClientPlans.includes(plan) ||
         !Number.isFinite(monthlyFee) ||
         monthlyFee < 0 ||
-        !isDateValue(startDate) ||
-        (endDate && !isDateValue(endDate))
+        !isValidDateValue(startDate) ||
+        (endDate && !isValidDateValue(endDate))
     ) {
         return null;
     }

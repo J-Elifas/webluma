@@ -12,11 +12,11 @@ import TextInputField from "@/components/ui/TextInputField";
 import type {
     CreateInvoiceFormErrors,
     CreateInvoiceFormValues,
-    DashboardInvoiceClientOption,
-} from "@/server/dashboard/types";
+    InvoiceClientOption,
+} from "@/server/invoices/types";
 
 interface CreateInvoiceFormProps {
-    clients: DashboardInvoiceClientOption[];
+    clients: InvoiceClientOption[];
     values: CreateInvoiceFormValues;
     errors: CreateInvoiceFormErrors;
     isSubmitting: boolean;

@@ -7,6 +7,22 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+export function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null;
+}
+
+export function getStringField(body: Record<string, unknown>, fieldName: string) {
+    const value = body[fieldName];
+
+    return typeof value === "string" ? value.trim() : "";
+}
+
+export function getOptionalStringField(body: Record<string, unknown>, fieldName: string) {
+    const value = getStringField(body, fieldName);
+
+    return value || undefined;
+}
+
 export function formatDateValue(date: Date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
