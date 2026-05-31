@@ -30,6 +30,7 @@ Keep server-only feature code in `src/server/<feature>/`:
 
 ## Coding Standards
 
+- Keep code simple and developer-readable; avoid overengineering, unnecessary constants, wrapper components, helper functions, or clever abstractions for one-off values or simple logic.
 - Use TypeScript for application code (`.ts` / `.tsx`).
 - Use 4-space indentation and keep components focused.
 - All React component files must use PascalCase, for example `LoginForm.tsx`, `LoginCard.tsx`, `IllustrationPanel.tsx`, and `DashboardContent.tsx`.
