@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AddClientForm from "@/components/dashboard/AddClientForm";
 import Modal from "@/components/ui/Modal";
 import type { StatusAlertTone } from "@/components/ui/StatusAlert";
+import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
 import { isValidDateValue, isValidHttpUrl } from "@/lib/utils";
 import type {
     AddClientFormErrors,
@@ -28,6 +29,30 @@ interface AddClientStatus {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const dashboardClientPlans: DashboardClientPlan[] = ["starter", "pro", "enterprise"];
+const addClientFieldOrder = [
+    "companyName",
+    "contactPerson",
+    "email",
+    "phone",
+    "website",
+    "plan",
+    "monthlyFee",
+    "startDate",
+    "endDate",
+    "notes",
+] as const satisfies readonly (keyof AddClientFormValues)[];
+const addClientFieldIds: Record<(typeof addClientFieldOrder)[number], string> = {
+    companyName: "company-name",
+    contactPerson: "contact-person",
+    email: "client-email",
+    phone: "client-phone",
+    website: "client-website",
+    plan: "client-plan",
+    monthlyFee: "monthly-fee",
+    startDate: "start-date",
+    endDate: "end-date",
+    notes: "client-notes",
+};
 
 const initialFormValues: AddClientFormValues = {
     companyName: "",
@@ -211,6 +236,7 @@ export default function AddClientController({
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
+            scrollToFirstFieldError(nextErrors, addClientFieldOrder, addClientFieldIds);
             return;
         }
 

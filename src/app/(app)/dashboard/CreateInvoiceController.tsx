@@ -18,6 +18,7 @@ import type {
     DashboardClientPlan,
     DashboardInvoiceClientOption,
 } from "@/server/dashboard/types";
+import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
 
 interface CreateInvoiceControllerProps {
     isOpen: boolean;
@@ -39,6 +40,26 @@ const planLabels: Record<DashboardClientPlan, string> = {
     enterprise: "Enterprise",
 };
 const invoiceNumberPrefix = "INV-";
+const createInvoiceFieldOrder = [
+    "clientId",
+    "periodStart",
+    "periodEnd",
+    "invoiceNumber",
+    "amount",
+    "issueDate",
+    "dueDate",
+    "notes",
+] as const satisfies readonly (keyof CreateInvoiceFormValues)[];
+const createInvoiceFieldIds: Record<(typeof createInvoiceFieldOrder)[number], string> = {
+    clientId: "invoice-client",
+    periodStart: "billing-period-start",
+    periodEnd: "billing-period-end",
+    invoiceNumber: "invoice-number",
+    amount: "invoice-amount",
+    issueDate: "invoice-issue-date",
+    dueDate: "invoice-due-date",
+    notes: "invoice-notes",
+};
 
 function toInvoiceNumberSuffix(value: string) {
     return value.trimStart().replace(/^INV-/i, "");
@@ -256,6 +277,7 @@ export default function CreateInvoiceController({
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
+            scrollToFirstFieldError(nextErrors, createInvoiceFieldOrder, createInvoiceFieldIds);
             return;
         }
 
