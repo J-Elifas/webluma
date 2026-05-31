@@ -15,6 +15,7 @@ interface ModalProps {
     children: ReactNode;
     size?: ModalSize;
     onClose: () => void;
+    onAfterClose?: () => void;
 }
 
 const sizeClasses: Record<ModalSize, string> = {
@@ -22,12 +23,23 @@ const sizeClasses: Record<ModalSize, string> = {
     lg: "max-w-2xl",
 };
 
-const closeAnimationMs = 180;
+const modalExitTransitionMs = 150;
+
+function getExitDelay() {
+    if (typeof window.matchMedia !== "function") {
+        return modalExitTransitionMs;
+    }
+
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? 0
+        : modalExitTransitionMs;
+}
 
 export default function Modal({
     children,
     description,
     isOpen,
+    onAfterClose,
     onClose,
     size = "md",
     title,
@@ -35,34 +47,59 @@ export default function Modal({
     const titleId = useId();
     const descriptionId = useId();
     const dialogRef = useRef<HTMLElement | null>(null);
-    const [shouldRender, setShouldRender] = useState(false);
+    const afterCloseRef = useRef(onAfterClose);
+    const [isPresent, setIsPresent] = useState(isOpen);
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        afterCloseRef.current = onAfterClose;
+    }, [onAfterClose]);
 
     useEffect(() => {
         if (isOpen) {
-            const timeoutId = window.setTimeout(() => {
-                setShouldRender(true);
-            }, 0);
+            if (!isPresent) {
+                const frameId = window.requestAnimationFrame(() => {
+                    setIsPresent(true);
+                });
+
+                return () => {
+                    window.cancelAnimationFrame(frameId);
+                };
+            }
+
+            const frameId = window.requestAnimationFrame(() => {
+                setIsVisible(true);
+            });
 
             return () => {
-                window.clearTimeout(timeoutId);
+                window.cancelAnimationFrame(frameId);
             };
         }
 
-        if (!shouldRender) {
+        if (!isPresent) {
             return;
         }
 
-        const timeoutId = window.setTimeout(() => {
-            setShouldRender(false);
-        }, closeAnimationMs);
+        let timeoutId: number | undefined;
+        const frameId = window.requestAnimationFrame(() => {
+            setIsVisible(false);
+            timeoutId = window.setTimeout(() => {
+                setIsPresent(false);
+                afterCloseRef.current?.();
+            }, getExitDelay());
+        });
 
         return () => {
-            window.clearTimeout(timeoutId);
+            window.cancelAnimationFrame(frameId);
+
+            if (timeoutId !== undefined) {
+                window.clearTimeout(timeoutId);
+            }
         };
-    }, [isOpen, shouldRender]);
+    }, [isOpen, isPresent]);
 
     useEffect(() => {
-        if (!shouldRender) {
+        if (!isPresent) {
             return;
         }
 
@@ -72,7 +109,7 @@ export default function Modal({
         return () => {
             document.body.style.overflow = previousOverflow;
         };
-    }, [shouldRender]);
+    }, [isPresent]);
 
     useEffect(() => {
         if (!isOpen) {
@@ -124,27 +161,22 @@ export default function Modal({
         };
     }, [isOpen, onClose]);
 
-    if (!shouldRender) {
+    if (!isPresent) {
         return null;
     }
 
     return createPortal(
         <div
             data-modal-viewport="true"
-            className={cn(
-                "fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 py-3 sm:items-center sm:px-6 sm:py-6",
-                isOpen ? "pointer-events-auto" : "pointer-events-none"
-            )}
+            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 py-3 sm:items-center sm:px-6 sm:py-6"
         >
             <div
                 className={cn(
-                    "absolute inset-0 bg-midnight-slate/45 backdrop-blur-sm fill-mode-both motion-reduce:animate-none",
-                    isOpen
-                        ? "animate-in fade-in duration-200 ease-out"
-                        : "animate-out fade-out duration-150 ease-in"
+                    "absolute inset-0 bg-midnight-slate/45 backdrop-blur-sm transition-opacity motion-reduce:transition-none",
+                    isVisible ? "opacity-100 duration-200 ease-out" : "opacity-0 duration-150 ease-in"
                 )}
                 aria-hidden="true"
-                onMouseDown={onClose}
+                onMouseDown={isOpen ? onClose : undefined}
             />
             <section
                 ref={dialogRef}
@@ -152,12 +184,13 @@ export default function Modal({
                 aria-modal="true"
                 aria-labelledby={titleId}
                 aria-describedby={description ? descriptionId : undefined}
+                inert={!isOpen ? true : undefined}
                 className={cn(
-                    "relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-[1.25rem] border border-mist-gray/80 bg-white shadow-[0_30px_80px_-34px_rgba(15,23,42,0.65)] fill-mode-both will-change-transform motion-reduce:animate-none sm:max-h-[min(44rem,calc(100dvh-3rem))]",
+                    "relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-[1.25rem] border border-mist-gray/80 bg-white shadow-[0_30px_80px_-34px_rgba(15,23,42,0.65)] transition-[opacity,translate,scale] will-change-[opacity,translate,scale] motion-reduce:transition-none sm:max-h-[min(44rem,calc(100dvh-3rem))]",
                     sizeClasses[size],
-                    isOpen
-                        ? "animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out"
-                        : "animate-out fade-out zoom-out-95 slide-out-to-bottom-2 duration-150 ease-in"
+                    isVisible
+                        ? "translate-y-0 scale-100 opacity-100 duration-200 ease-out"
+                        : "translate-y-3 scale-[0.98] opacity-0 duration-150 ease-in"
                 )}
             >
                 <header className="flex shrink-0 items-start justify-between gap-4 border-b border-mist-gray/70 px-5 py-4 shadow-[0_-10px_20px_-0px_rgba(15,23,42,0.5)]">

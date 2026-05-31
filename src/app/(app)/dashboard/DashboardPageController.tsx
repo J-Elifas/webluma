@@ -55,6 +55,10 @@ export default function DashboardPageController({
         setActiveAction(null);
     }
 
+    function handleModalAfterClose(action: QuickActionId) {
+        setRenderedAction((currentAction) => (currentAction === action ? null : currentAction));
+    }
+
     function handleClientPendingChange(isPending: boolean) {
         setLoadingLabel("Saving client");
         setIsLoading(isPending);
@@ -90,6 +94,7 @@ export default function DashboardPageController({
                 <AddClientController
                     isOpen={activeAction === "add-client"}
                     onClose={handleModalClose}
+                    onAfterClose={() => handleModalAfterClose("add-client")}
                     onPendingChange={handleClientPendingChange}
                     onStatusChange={handleStatusAlert}
                 />
@@ -100,6 +105,7 @@ export default function DashboardPageController({
                     clients={invoiceClientOptions}
                     isOpen={activeAction === "create-invoice"}
                     onClose={handleModalClose}
+                    onAfterClose={() => handleModalAfterClose("create-invoice")}
                     onPendingChange={handleInvoicePendingChange}
                     onStatusChange={handleStatusAlert}
                 />
@@ -109,6 +115,7 @@ export default function DashboardPageController({
                 <ViewBillingController
                     isOpen={activeAction === "view-billing"}
                     onClose={handleModalClose}
+                    onAfterClose={() => handleModalAfterClose("view-billing")}
                 />
             ) : null}
 
