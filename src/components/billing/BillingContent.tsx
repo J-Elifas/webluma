@@ -1,11 +1,16 @@
-import { Plus } from "lucide-react";
+import { FileText } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
 import BillingInvoicesPanel from "./BillingInvoicesPanel";
 import BillingMetricCards from "./BillingMetricCards";
 import BillingSidePanel from "./BillingSidePanel";
 
-export default function BillingContent() {
+interface BillingContentProps {
+    isGuest: boolean;
+    onCreateInvoice: () => void;
+}
+
+export default function BillingContent({ isGuest, onCreateInvoice }: BillingContentProps) {
     return (
         <>
             <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -15,12 +20,13 @@ export default function BillingContent() {
                 />
                 <Button
                     variant="dark"
-                    size="lg"
-                    aria-disabled="true"
-                    className="w-full sm:w-fit"
-                    leftIcon={<Plus className="h-4 w-4" aria-hidden="true" />}
+                    size="md"
+                    className="w-full sm:w-auto"
+                    disabled={isGuest}
+                    onClick={onCreateInvoice}
+                    leftIcon={<FileText className="h-4 w-4" aria-hidden="true" />}
                 >
-                    Create invoice
+                    Create Invoice
                 </Button>
             </section>
 
