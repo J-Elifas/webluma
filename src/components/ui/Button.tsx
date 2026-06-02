@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "dark" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "dark" | "secondary" | "ghost" | "outline";
 type ButtonSize = "sm" | "md" | "lg" | "icon-sm" | "icon-md" | "icon-lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,6 +19,8 @@ const variantClasses: Record<ButtonVariant, string> = {
     secondary:
         "border border-mist-gray/70 bg-white text-midnight-slate shadow-sm hover:bg-cloud-white disabled:opacity-60",
     ghost: "text-midnight-slate hover:bg-cloud-white disabled:text-slate-gray disabled:opacity-60",
+    outline:
+        "border border-mist-gray/70 bg-white text-midnight-slate shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-luma-blue/70 hover:bg-luma-blue/10 hover:shadow-[0_14px_24px_-18px_rgba(56,189,248,0.95)] disabled:opacity-60",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

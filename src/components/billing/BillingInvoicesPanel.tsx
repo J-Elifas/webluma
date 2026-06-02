@@ -4,6 +4,7 @@ import DataTable, {
     TablePagination,
     TableSearch,
 } from "@/components/ui/DataTable";
+import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type { BillingInvoiceTableData, InvoiceStatusTone } from "@/server/invoices/types";
 
@@ -30,14 +31,6 @@ function InvoiceStatusPill({ children, tone }: InvoiceStatusPillProps) {
                 statusClasses[tone]
             )}
         >
-            {children}
-        </span>
-    );
-}
-
-function InvoiceAction({ children }: { children: string }) {
-    return (
-        <span className="inline-flex h-9 min-w-20 items-center justify-center rounded-xl border border-mist-gray/70 bg-white px-2 text-xs font-semibold text-midnight-slate shadow-sm">
             {children}
         </span>
     );
@@ -124,7 +117,14 @@ export default function BillingInvoicesPanel({ tableData }: BillingInvoicesPanel
                             </td>
                             <td className="px-4 py-4">
                                 <div className="flex items-center gap-2">
-                                    <InvoiceAction>{invoice.actionLabel}</InvoiceAction>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-9 min-w-20 rounded-xl px-2 text-xs font-semibold hover:ring-1 hover:ring-luma-blue/20 focus:ring-2 focus:ring-luma-blue/40"
+                                    >
+                                        {invoice.actionLabel}
+                                    </Button>
                                     <MoreVertical
                                         className="h-4 w-4 text-slate-gray"
                                         aria-hidden="true"
