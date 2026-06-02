@@ -43,7 +43,6 @@ export default function BillingSidePanel() {
             <article className="rounded-[1.25rem] border border-mist-gray/70 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-lg font-black text-midnight-slate">Billing insights</h2>
-                    <TrendingUp className="h-5 w-5 text-luma-blue" aria-hidden="true" />
                 </div>
 
                 <div className="mt-5 space-y-5">
@@ -94,7 +93,7 @@ export default function BillingSidePanel() {
                     </p>
                 </div>
 
-                <span className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-black text-midnight-slate shadow-sm">
+                <span className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-semibold text-midnight-slate shadow-sm">
                     <Settings className="h-4 w-4 text-slate-gray" aria-hidden="true" />
                     Manage reminders
                 </span>

@@ -17,13 +17,13 @@ import type {
     CreateInvoiceFormErrors,
     CreateInvoiceFormValues,
     CreateInvoiceInput,
-    InvoiceClientOption,
+    InvoiceClient,
 } from "@/server/invoices/types";
 
 interface CreateInvoiceControllerProps {
     isOpen: boolean;
     onClose: () => void;
-    clients: InvoiceClientOption[];
+    clients: InvoiceClient[];
     onAfterClose?: () => void;
     onPendingChange?: (isPending: boolean) => void;
     onStatusChange?: (status: CreateInvoiceStatus) => void;
@@ -83,10 +83,7 @@ function createInitialFormValues(): CreateInvoiceFormValues {
     };
 }
 
-function validateCreateInvoiceForm(
-    values: CreateInvoiceFormValues,
-    clients: InvoiceClientOption[]
-) {
+function validateCreateInvoiceForm(values: CreateInvoiceFormValues, clients: InvoiceClient[]) {
     const errors: CreateInvoiceFormErrors = {};
     const amount = Number(values.amount);
     const selectedClient = clients.find((client) => client.id === values.clientId);

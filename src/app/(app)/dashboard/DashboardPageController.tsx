@@ -6,14 +6,14 @@ import type { QuickActionId } from "@/components/dashboard/QuickActionsCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
 import type { DashboardOverview } from "@/server/dashboard/types";
-import type { InvoiceClientOption } from "@/server/invoices/types";
+import type { InvoiceClient } from "@/server/invoices/types";
 import AddClientController from "../clients/AddClientController";
 import CreateInvoiceController from "../invoices/CreateInvoiceController";
 import ViewBillingController from "./ViewBillingController";
 
 interface DashboardPageControllerProps {
     overview: DashboardOverview;
-    invoiceClientOptions: InvoiceClientOption[];
+    invoiceClient: InvoiceClient[];
 }
 
 interface DashboardAlert {
@@ -24,7 +24,7 @@ interface DashboardAlert {
 }
 
 export default function DashboardPageController({
-    invoiceClientOptions,
+    invoiceClient,
     overview,
 }: DashboardPageControllerProps) {
     const [isLoading, setIsLoading] = useState(false);
@@ -103,7 +103,7 @@ export default function DashboardPageController({
 
             {renderedAction === "create-invoice" ? (
                 <CreateInvoiceController
-                    clients={invoiceClientOptions}
+                    clients={invoiceClient}
                     isOpen={activeAction === "create-invoice"}
                     onClose={handleModalClose}
                     onAfterClose={() => handleModalAfterClose("create-invoice")}

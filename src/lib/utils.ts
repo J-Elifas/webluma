@@ -23,6 +23,22 @@ export function getOptionalStringField(body: Record<string, unknown>, fieldName:
     return value || undefined;
 }
 
+export const currencyFormatter = new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+});
+
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric",
+});
+
+export function formatShortDate(date: Date) {
+    return shortDateFormatter.format(date);
+}
+
 export function formatDateValue(date: Date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");

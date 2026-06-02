@@ -1,16 +1,22 @@
 import { FileText } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
+import type { BillingInvoiceTableData } from "@/server/invoices/types";
 import BillingInvoicesPanel from "./BillingInvoicesPanel";
 import BillingMetricCards from "./BillingMetricCards";
 import BillingSidePanel from "./BillingSidePanel";
 
 interface BillingContentProps {
+    invoiceTableData: BillingInvoiceTableData;
     isGuest: boolean;
     onCreateInvoice: () => void;
 }
 
-export default function BillingContent({ isGuest, onCreateInvoice }: BillingContentProps) {
+export default function BillingContent({
+    invoiceTableData,
+    isGuest,
+    onCreateInvoice,
+}: BillingContentProps) {
     return (
         <>
             <section className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -33,7 +39,7 @@ export default function BillingContent({ isGuest, onCreateInvoice }: BillingCont
             <BillingMetricCards />
 
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
-                <BillingInvoicesPanel />
+                <BillingInvoicesPanel tableData={invoiceTableData} />
                 <BillingSidePanel />
             </section>
         </>

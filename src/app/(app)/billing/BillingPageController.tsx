@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import BillingContent from "@/components/billing/BillingContent";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
-import type { InvoiceClientOption } from "@/server/invoices/types";
+import type { BillingInvoiceTableData, InvoiceClient } from "@/server/invoices/types";
 import CreateInvoiceController from "../invoices/CreateInvoiceController";
 
 interface BillingPageControllerProps {
-    invoiceClientOptions: InvoiceClientOption[];
+    invoiceClient: InvoiceClient[];
+    invoiceTableData: BillingInvoiceTableData;
     isGuest: boolean;
 }
 
@@ -20,7 +21,8 @@ interface BillingInvoiceAlert {
 }
 
 export default function BillingPageController({
-    invoiceClientOptions,
+    invoiceClient,
+    invoiceTableData,
     isGuest,
 }: BillingPageControllerProps) {
     const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = useState(false);
@@ -54,7 +56,11 @@ export default function BillingPageController({
 
     return (
         <>
-            <BillingContent isGuest={isGuest} onCreateInvoice={handleCreateInvoiceSelect} />
+            <BillingContent
+                invoiceTableData={invoiceTableData}
+                isGuest={isGuest}
+                onCreateInvoice={handleCreateInvoiceSelect}
+            />
 
             {alert ? (
                 <StatusAlert
@@ -67,7 +73,7 @@ export default function BillingPageController({
             ) : null}
 
             <CreateInvoiceController
-                clients={invoiceClientOptions}
+                clients={invoiceClient}
                 isOpen={isCreateInvoiceOpen}
                 onClose={() => setIsCreateInvoiceOpen(false)}
                 onPendingChange={setIsLoading}
