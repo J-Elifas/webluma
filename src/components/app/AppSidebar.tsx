@@ -38,11 +38,13 @@ interface AppSidebarProps {
     isMobileOpen: boolean;
     profileMenu: ReactNode;
     onMobileClose: () => void;
+    onNavigate: (href: string) => void;
 }
 
 interface SidebarPanelProps {
     currentPath: string;
     onMobileClose: () => void;
+    onNavigate: (href: string) => void;
     profileMenu: ReactNode;
     shouldCloseOnNavigate?: boolean;
 }
@@ -54,6 +56,7 @@ function getIsActivePath(currentPath: string, href: string) {
 function SidebarPanel({
     currentPath,
     onMobileClose,
+    onNavigate,
     profileMenu,
     shouldCloseOnNavigate = false,
 }: SidebarPanelProps) {
@@ -90,13 +93,12 @@ function SidebarPanel({
                     <nav className="mt-6 space-y-1.5" aria-label="Dashboard navigation">
                         {sidebarItems.map((item) => {
                             const Icon = item.icon;
-                            const isActive = item.href
-                                ? getIsActivePath(currentPath, item.href)
-                                : false;
+                            const href = item.href;
+                            const isActive = href ? getIsActivePath(currentPath, href) : false;
                             const itemClassName = `flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-sm font-bold transition-colors ${
                                 isActive
                                     ? "bg-midnight-slate text-white shadow-[0_16px_32px_-24px_rgba(15,23,42,0.85)]"
-                                    : item.href
+                                    : href
                                       ? "text-slate-gray hover:bg-cloud-white hover:text-midnight-slate"
                                       : "text-slate-gray disabled:cursor-not-allowed disabled:opacity-75"
                             }`;
@@ -104,12 +106,13 @@ function SidebarPanel({
                                 isActive ? "text-luma-blue" : "text-slate-gray"
                             }`;
 
-                            return item.href ? (
+                            return href ? (
                                 <Link
                                     key={item.label}
-                                    href={item.href}
+                                    href={href}
                                     aria-current={isActive ? "page" : undefined}
                                     onClick={shouldCloseOnNavigate ? onMobileClose : undefined}
+                                    onNavigate={() => onNavigate(href)}
                                     className={itemClassName}
                                 >
                                     <span className="flex items-center gap-3">
@@ -165,6 +168,7 @@ function SidebarPanel({
 export default function AppSidebar({
     currentPath,
     isMobileOpen,
+    onNavigate,
     profileMenu,
     onMobileClose,
 }: AppSidebarProps) {
@@ -231,6 +235,7 @@ export default function AppSidebar({
                         <SidebarPanel
                             currentPath={currentPath}
                             onMobileClose={onMobileClose}
+                            onNavigate={onNavigate}
                             profileMenu={profileMenu}
                             shouldCloseOnNavigate
                         />
@@ -242,6 +247,7 @@ export default function AppSidebar({
                 <SidebarPanel
                     currentPath={currentPath}
                     onMobileClose={onMobileClose}
+                    onNavigate={onNavigate}
                     profileMenu={profileMenu}
                 />
             </div>

@@ -9,6 +9,7 @@ import AppSidebar from "@/components/app/AppSidebar";
 import AppTopbar from "@/components/app/AppTopbar";
 import MobileSidebarButton from "@/components/app/MobileSidebarButton";
 import ProfileMenu from "@/components/app/ProfileMenu";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface AppChromeControllerProps {
     children: ReactNode;
@@ -33,10 +34,22 @@ export default function AppChromeController({
     const pathname = usePathname();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isInlineButtonVisible, setIsInlineButtonVisible] = useState(true);
+    const [isRouteLoading, setIsRouteLoading] = useState(false);
+    const [loadingLabel, setLoadingLabel] = useState("Loading page");
     const inlineButtonRef = useRef<HTMLButtonElement | null>(null);
     const floatingButtonRef = useRef<HTMLButtonElement | null>(null);
     const isInlineButtonVisibleRef = useRef(true);
     const pageTitle = pageTitles[pathname] ?? "Workspace";
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            setIsRouteLoading(false);
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [pathname]);
 
     useEffect(() => {
         let animationFrame: number | null = null;
@@ -141,11 +154,29 @@ export default function AppChromeController({
         });
     };
 
+    function handleRouteNavigate(href: string) {
+        if (href !== pathname) {
+            setLoadingLabel("Loading page");
+            setIsRouteLoading(true);
+        }
+    }
+
+    async function handleLogout() {
+        setLoadingLabel("Logging out");
+        setIsRouteLoading(true);
+
+        try {
+            await signOut({ callbackUrl: "/login" });
+        } catch {
+            setIsRouteLoading(false);
+        }
+    }
+
     const profileMenu = (
         <ProfileMenu
             name={user.name}
             email={user.email}
-            onLogout={() => signOut({ callbackUrl: "/login" })}
+            onLogout={handleLogout}
         />
     );
 
@@ -165,6 +196,7 @@ export default function AppChromeController({
                     <AppSidebar
                         currentPath={pathname}
                         isMobileOpen={isMobileOpen}
+                        onNavigate={handleRouteNavigate}
                         onMobileClose={handleMobileClose}
                         profileMenu={profileMenu}
                     />
@@ -187,6 +219,8 @@ export default function AppChromeController({
                 onClick={handleMobileToggle}
                 variant="floating"
             />
+
+            <LoadingSpinner isVisible={isRouteLoading} label={loadingLabel} fullscreen />
         </>
     );
 }
