@@ -23,6 +23,8 @@ export interface BillingInvoiceRow {
     billingPeriod: string;
     amount: string;
     dueDate: string;
+    paidDate?: string;
+    paymentNotes?: string;
     status: InvoiceStatusTone;
     statusLabel: string;
     actionLabel: string;
@@ -67,4 +69,27 @@ export interface CreateInvoiceMutationResult {
     message?: string;
     ok: boolean;
     invoice?: CreateInvoiceInput;
+}
+
+export interface MarkInvoicePaidInput {
+    invoiceId: string;
+    paidDate: string;
+    notes?: string;
+}
+
+export interface MarkInvoicePaidFormValues {
+    paidDate: string;
+    notes: string;
+}
+
+export type MarkInvoicePaidFormErrors = Partial<Record<keyof MarkInvoicePaidFormValues, string>>;
+
+export interface MarkInvoicePaidMutationResult {
+    message?: string;
+    ok: boolean;
+    invoice?: {
+        id: string;
+        paidDate: string;
+        paymentNotes?: string;
+    };
 }

@@ -19,7 +19,7 @@ interface InvoiceStatusPillProps {
 
 interface BillingInvoicesPanelProps {
     tableData: BillingInvoiceTableData;
-    onMarkInvoicePaid: (invoice: BillingInvoiceRow) => void;
+    onInvoiceAction: (invoice: BillingInvoiceRow) => void;
 }
 
 const statusClasses: Record<InvoiceStatusTone, string> = {
@@ -42,7 +42,7 @@ function InvoiceStatusPill({ children, tone }: InvoiceStatusPillProps) {
 }
 
 export default function BillingInvoicesPanel({
-    onMarkInvoicePaid,
+    onInvoiceAction,
     tableData,
 }: BillingInvoicesPanelProps) {
     const { currentPage, invoices, pageSize, totalInvoices, totalPages } = tableData;
@@ -102,7 +102,7 @@ export default function BillingInvoicesPanel({
             <tbody className="divide-y divide-mist-gray/60">
                 {invoices.length > 0 ? (
                     invoices.map((invoice) => {
-                        const canMarkPaid = invoice.status !== "paid";
+                        const isPaid = invoice.status === "paid";
 
                         return (
                             <tr key={invoice.id}>
@@ -132,18 +132,18 @@ export default function BillingInvoicesPanel({
                                             type="button"
                                             variant="outline"
                                             size="sm"
-                                            aria-haspopup={canMarkPaid ? "dialog" : undefined}
+                                            aria-haspopup="dialog"
                                             aria-label={
-                                                canMarkPaid
-                                                    ? `Mark ${invoice.invoiceNumber} as paid`
-                                                    : undefined
+                                                isPaid
+                                                    ? `View payment for ${invoice.invoiceNumber}`
+                                                    : `Mark ${invoice.invoiceNumber} as paid`
                                             }
-                                            onClick={
-                                                canMarkPaid
-                                                    ? () => onMarkInvoicePaid(invoice)
-                                                    : undefined
-                                            }
-                                            className="h-9 min-w-20 rounded-xl px-2 text-xs font-semibold hover:ring-1 hover:ring-luma-blue/20 focus:ring-2 focus:ring-luma-blue/40"
+                                            onClick={() => onInvoiceAction(invoice)}
+                                            className={cn(
+                                                "h-9 min-w-20 rounded-xl px-2 text-xs font-semibold hover:ring-1 hover:ring-luma-blue/20 focus:ring-2 focus:ring-luma-blue/40",
+                                                isPaid &&
+                                                    "border-soft-mint/80 bg-soft-mint/45 text-teal-700 hover:bg-soft-mint/60"
+                                            )}
                                         >
                                             {invoice.actionLabel}
                                         </Button>

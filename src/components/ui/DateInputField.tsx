@@ -520,13 +520,13 @@ export default function DateInputField({
                                                 ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
                                                 : "text-midnight-slate hover:bg-cloud-white",
                                             !cell.isCurrentMonth &&
-                                            !cell.isSelected &&
-                                            "text-slate-gray/45",
+                                                !cell.isSelected &&
+                                                "text-slate-gray/45",
                                             cell.isToday &&
-                                            !cell.isSelected &&
-                                            "ring-1 ring-luma-blue/35 text-luma-blue",
+                                                !cell.isSelected &&
+                                                "ring-1 ring-luma-blue/35 text-luma-blue",
                                             cell.disabled &&
-                                            "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                                "cursor-not-allowed bg-transparent text-slate-gray/30"
                                         )}
                                     >
                                         {cell.date.getDate()}
@@ -569,10 +569,10 @@ export default function DateInputField({
                                                     ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
                                                     : "text-midnight-slate hover:bg-cloud-white",
                                                 isCurrentViewMonth &&
-                                                !isSelectedMonth &&
-                                                "ring-1 ring-luma-blue/35 text-luma-blue",
+                                                    !isSelectedMonth &&
+                                                    "ring-1 ring-luma-blue/35 text-luma-blue",
                                                 isDisabled &&
-                                                "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                                    "cursor-not-allowed bg-transparent text-slate-gray/30"
                                             )}
                                         >
                                             {month}
@@ -609,10 +609,10 @@ export default function DateInputField({
                                                     ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
                                                     : "text-midnight-slate hover:bg-cloud-white",
                                                 isCurrentViewYear &&
-                                                !isSelectedYear &&
-                                                "ring-1 ring-luma-blue/35 text-luma-blue",
+                                                    !isSelectedYear &&
+                                                    "ring-1 ring-luma-blue/35 text-luma-blue",
                                                 isDisabled &&
-                                                "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                                    "cursor-not-allowed bg-transparent text-slate-gray/30"
                                             )}
                                         >
                                             {year}

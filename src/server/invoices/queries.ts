@@ -119,6 +119,8 @@ export async function getBillingInvoiceTableData(
                 dueDate: true,
                 periodStart: true,
                 periodEnd: true,
+                paidAt: true,
+                paymentNotes: true,
                 client: {
                     select: {
                         companyName: true,
@@ -146,6 +148,8 @@ export async function getBillingInvoiceTableData(
             billingPeriod: `${formatShortDate(invoice.periodStart)} - ${formatShortDate(invoice.periodEnd)}`,
             amount: currencyFormatter.format(Number(invoice.amount)),
             dueDate: formatShortDate(invoice.dueDate),
+            paidDate: invoice.paidAt ? toUtcDateValue(invoice.paidAt) : undefined,
+            paymentNotes: invoice.paymentNotes ?? undefined,
             status: statusTones[invoice.status],
             statusLabel: statusLabels[invoice.status],
             actionLabel: actionLabels[invoice.status],

@@ -1,7 +1,12 @@
 import { InvoiceStatus } from "@prisma/client";
 import { formatDateValue, toUtcDate, toUtcDateValue } from "@/lib/utils";
 import { prisma } from "@/server/db/prisma";
-import type { CreateInvoiceInput, CreateInvoiceMutationResult } from "./types";
+import type {
+    CreateInvoiceInput,
+    CreateInvoiceMutationResult,
+    MarkInvoicePaidInput,
+    MarkInvoicePaidMutationResult,
+} from "./types";
 
 const activeInvoiceStatuses = [InvoiceStatus.pending, InvoiceStatus.overdue];
 
@@ -83,5 +88,57 @@ export async function createInvoice(
         message: "Invoice created!",
         ok: true,
         invoice: input,
+    };
+}
+
+export async function markInvoicePaid(
+    input: MarkInvoicePaidInput,
+    userId: string
+): Promise<MarkInvoicePaidMutationResult> {
+    const invoice = await prisma.invoice.findFirst({
+        where: {
+            id: input.invoiceId,
+            client: {
+                userId,
+            },
+        },
+        select: {
+            id: true,
+        },
+    });
+
+    if (!invoice) {
+        return {
+            message: "Cannot find specific invoice!",
+            ok: false,
+        };
+    }
+
+    const updatedInvoice = await prisma.invoice.update({
+        where: {
+            id: invoice.id,
+        },
+        data: {
+            paidAt: toUtcDate(input.paidDate),
+            paymentNotes: input.notes ?? null,
+            status: InvoiceStatus.paid,
+        },
+        select: {
+            id: true,
+            paidAt: true,
+            paymentNotes: true,
+        },
+    });
+
+    return {
+        message: "Payment marked complete.",
+        ok: true,
+        invoice: {
+            id: updatedInvoice.id,
+            paidDate: updatedInvoice.paidAt
+                ? toUtcDateValue(updatedInvoice.paidAt)
+                : input.paidDate,
+            paymentNotes: updatedInvoice.paymentNotes ?? undefined,
+        },
     };
 }

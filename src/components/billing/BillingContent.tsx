@@ -10,14 +10,14 @@ interface BillingContentProps {
     invoiceTableData: BillingInvoiceTableData;
     isGuest: boolean;
     onCreateInvoice: () => void;
-    onMarkInvoicePaid: (invoice: BillingInvoiceRow) => void;
+    onInvoiceAction: (invoice: BillingInvoiceRow) => void;
 }
 
 export default function BillingContent({
     invoiceTableData,
     isGuest,
     onCreateInvoice,
-    onMarkInvoicePaid,
+    onInvoiceAction,
 }: BillingContentProps) {
     return (
         <>
@@ -43,7 +43,7 @@ export default function BillingContent({
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
                 <BillingInvoicesPanel
                     tableData={invoiceTableData}
-                    onMarkInvoicePaid={onMarkInvoicePaid}
+                    onInvoiceAction={onInvoiceAction}
                 />
                 <BillingSidePanel />
             </section>

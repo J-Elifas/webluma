@@ -8,8 +8,8 @@ import {
     isRecord,
     isValidDateValue,
 } from "@/lib/utils";
-import { createInvoice } from "@/server/invoices/mutations";
-import type { CreateInvoiceInput } from "@/server/invoices/types";
+import { createInvoice, markInvoicePaid } from "@/server/invoices/mutations";
+import type { CreateInvoiceInput, MarkInvoicePaidInput } from "@/server/invoices/types";
 
 function parseCreateInvoiceInput(body: unknown): CreateInvoiceInput | null {
     if (!isRecord(body)) {
@@ -51,6 +51,25 @@ function parseCreateInvoiceInput(body: unknown): CreateInvoiceInput | null {
     };
 }
 
+function parseMarkInvoicePaidInput(body: unknown): MarkInvoicePaidInput | null {
+    if (!isRecord(body)) {
+        return null;
+    }
+
+    const invoiceId = getStringField(body, "invoiceId");
+    const paidDate = getStringField(body, "paidDate");
+
+    if (!invoiceId || !isValidDateValue(paidDate)) {
+        return null;
+    }
+
+    return {
+        invoiceId,
+        paidDate,
+        notes: getOptionalStringField(body, "notes"),
+    };
+}
+
 export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
     if (!session || session.user.role === "GUEST") {
@@ -70,6 +89,35 @@ export async function POST(request: Request) {
     }
 
     const result = await createInvoice(input, session.user.id);
+    if (!result.ok) {
+        return NextResponse.json(
+            { message: result.message || "Something went wrong!" },
+            { status: 400 }
+        );
+    }
+
+    return NextResponse.json(result);
+}
+
+export async function PATCH(request: Request) {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role === "GUEST") {
+        return NextResponse.json({ message: "You are not authenticate!" }, { status: 401 });
+    }
+
+    let body: unknown;
+    try {
+        body = await request.json();
+    } catch {
+        return NextResponse.json({ message: "Unknown data!" }, { status: 400 });
+    }
+
+    const input = parseMarkInvoicePaidInput(body);
+    if (!input) {
+        return NextResponse.json({ message: "Input required!" }, { status: 400 });
+    }
+
+    const result = await markInvoicePaid(input, session.user.id);
     if (!result.ok) {
         return NextResponse.json(
             { message: result.message || "Something went wrong!" },

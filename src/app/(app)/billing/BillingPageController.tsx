@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import BillingContent from "@/components/billing/BillingContent";
-import MarkInvoicePaidModal from "@/components/billing/MarkInvoicePaidModal";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
 import type {
@@ -10,6 +9,7 @@ import type {
     BillingInvoiceTableData,
     InvoiceClient,
 } from "@/server/invoices/types";
+import MarkInvoicePaidController from "./MarkInvoicePaidController";
 import CreateInvoiceController from "../invoices/CreateInvoiceController";
 
 interface BillingPageControllerProps {
@@ -54,7 +54,7 @@ export default function BillingPageController({
         setIsCreateInvoiceOpen(true);
     }
 
-    function handleMarkInvoicePaidSelect(invoice: BillingInvoiceRow) {
+    function handleInvoiceActionSelect(invoice: BillingInvoiceRow) {
         setSelectedInvoice(invoice);
         setIsMarkPaidOpen(true);
     }
@@ -76,7 +76,7 @@ export default function BillingPageController({
                 invoiceTableData={invoiceTableData}
                 isGuest={isGuest}
                 onCreateInvoice={handleCreateInvoiceSelect}
-                onMarkInvoicePaid={handleMarkInvoicePaidSelect}
+                onInvoiceAction={handleInvoiceActionSelect}
             />
 
             {alert ? (
@@ -97,11 +97,14 @@ export default function BillingPageController({
                 onStatusChange={handleStatusAlert}
             />
 
-            <MarkInvoicePaidModal
+            <MarkInvoicePaidController
+                key={selectedInvoice?.id ?? "invoice-payment"}
                 invoice={selectedInvoice}
                 isOpen={isMarkPaidOpen}
                 onClose={() => setIsMarkPaidOpen(false)}
                 onAfterClose={handleMarkInvoicePaidAfterClose}
+                onPendingChange={setIsLoading}
+                onStatusChange={handleStatusAlert}
             />
 
             <LoadingSpinner isVisible={isLoading} label="Saving invoice" fullscreen />
