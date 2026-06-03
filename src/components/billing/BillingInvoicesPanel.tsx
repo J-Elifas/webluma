@@ -6,7 +6,11 @@ import DataTable, {
 } from "@/components/ui/DataTable";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-import type { BillingInvoiceTableData, InvoiceStatusTone } from "@/server/invoices/types";
+import type {
+    BillingInvoiceRow,
+    BillingInvoiceTableData,
+    InvoiceStatusTone,
+} from "@/server/invoices/types";
 
 interface InvoiceStatusPillProps {
     children: string;
@@ -15,6 +19,7 @@ interface InvoiceStatusPillProps {
 
 interface BillingInvoicesPanelProps {
     tableData: BillingInvoiceTableData;
+    onMarkInvoicePaid: (invoice: BillingInvoiceRow) => void;
 }
 
 const statusClasses: Record<InvoiceStatusTone, string> = {
@@ -36,7 +41,10 @@ function InvoiceStatusPill({ children, tone }: InvoiceStatusPillProps) {
     );
 }
 
-export default function BillingInvoicesPanel({ tableData }: BillingInvoicesPanelProps) {
+export default function BillingInvoicesPanel({
+    onMarkInvoicePaid,
+    tableData,
+}: BillingInvoicesPanelProps) {
     const { currentPage, invoices, pageSize, totalInvoices, totalPages } = tableData;
 
     return (
@@ -93,46 +101,61 @@ export default function BillingInvoicesPanel({ tableData }: BillingInvoicesPanel
             </thead>
             <tbody className="divide-y divide-mist-gray/60">
                 {invoices.length > 0 ? (
-                    invoices.map((invoice) => (
-                        <tr key={invoice.id}>
-                            <td className="whitespace-nowrap px-4 py-4 text-sm font-bold text-midnight-slate">
-                                {invoice.invoiceNumber}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-midnight-slate">
-                                {invoice.clientName}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-gray">
-                                {invoice.billingPeriod}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-midnight-slate">
-                                {invoice.amount}
-                            </td>
-                            <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-gray">
-                                {invoice.dueDate}
-                            </td>
-                            <td className="px-4 py-4">
-                                <InvoiceStatusPill tone={invoice.status}>
-                                    {invoice.statusLabel}
-                                </InvoiceStatusPill>
-                            </td>
-                            <td className="px-4 py-4">
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-9 min-w-20 rounded-xl px-2 text-xs font-semibold hover:ring-1 hover:ring-luma-blue/20 focus:ring-2 focus:ring-luma-blue/40"
-                                    >
-                                        {invoice.actionLabel}
-                                    </Button>
-                                    <MoreVertical
-                                        className="h-4 w-4 text-slate-gray"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                            </td>
-                        </tr>
-                    ))
+                    invoices.map((invoice) => {
+                        const canMarkPaid = invoice.status !== "paid";
+
+                        return (
+                            <tr key={invoice.id}>
+                                <td className="whitespace-nowrap px-4 py-4 text-sm font-bold text-midnight-slate">
+                                    {invoice.invoiceNumber}
+                                </td>
+                                <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-midnight-slate">
+                                    {invoice.clientName}
+                                </td>
+                                <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-gray">
+                                    {invoice.billingPeriod}
+                                </td>
+                                <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-midnight-slate">
+                                    {invoice.amount}
+                                </td>
+                                <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-gray">
+                                    {invoice.dueDate}
+                                </td>
+                                <td className="px-4 py-4">
+                                    <InvoiceStatusPill tone={invoice.status}>
+                                        {invoice.statusLabel}
+                                    </InvoiceStatusPill>
+                                </td>
+                                <td className="px-4 py-4">
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            aria-haspopup={canMarkPaid ? "dialog" : undefined}
+                                            aria-label={
+                                                canMarkPaid
+                                                    ? `Mark ${invoice.invoiceNumber} as paid`
+                                                    : undefined
+                                            }
+                                            onClick={
+                                                canMarkPaid
+                                                    ? () => onMarkInvoicePaid(invoice)
+                                                    : undefined
+                                            }
+                                            className="h-9 min-w-20 rounded-xl px-2 text-xs font-semibold hover:ring-1 hover:ring-luma-blue/20 focus:ring-2 focus:ring-luma-blue/40"
+                                        >
+                                            {invoice.actionLabel}
+                                        </Button>
+                                        <MoreVertical
+                                            className="h-4 w-4 text-slate-gray"
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                        );
+                    })
                 ) : (
                     <tr>
                         <td

@@ -22,6 +22,7 @@ interface DateInputFieldProps {
     triggerClassName?: string;
     labelClassName?: string;
     calendarLabel?: string;
+    calendarSize?: DateInputCalendarSize;
     onValueChange?: (value: string) => void;
 }
 
@@ -35,6 +36,48 @@ interface CalendarCell {
 }
 
 type CalendarView = "date" | "month" | "year";
+type DateInputCalendarSize = "md" | "sm";
+
+const calendarSizeClasses: Record<
+    DateInputCalendarSize,
+    {
+        panel: string;
+        navButton: string;
+        viewSwitcher: string;
+        viewButton: string;
+        section: string;
+        weekday: string;
+        dayButton: string;
+        optionButton: string;
+        footer: string;
+        footerButton: string;
+    }
+> = {
+    md: {
+        panel: "p-3",
+        navButton: "h-8 w-8 rounded-lg",
+        viewSwitcher: "mt-3 rounded-xl p-1",
+        viewButton: "rounded-lg px-2.5 py-1.5 text-xs",
+        section: "mt-3",
+        weekday: "py-1 text-xs",
+        dayButton: "h-8 rounded-lg text-xs",
+        optionButton: "h-9 rounded-lg text-xs",
+        footer: "mt-3 pt-3",
+        footerButton: "rounded-lg px-2.5 py-1.5 text-xs",
+    },
+    sm: {
+        panel: "p-2",
+        navButton: "h-7 w-7 rounded-md",
+        viewSwitcher: "mt-2 rounded-lg p-1",
+        viewButton: "rounded-md px-2 py-1 text-[11px]",
+        section: "mt-2",
+        weekday: "py-0.5 text-[11px]",
+        dayButton: "h-7 rounded-md text-[11px]",
+        optionButton: "h-8 rounded-md text-[11px]",
+        footer: "mt-2 pt-2",
+        footerButton: "rounded-md px-2 py-1 text-[11px]",
+    },
+};
 
 const weekdayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const monthLabels = [
@@ -154,6 +197,7 @@ function getYearRange(viewMonth: Date) {
 
 export default function DateInputField({
     calendarLabel,
+    calendarSize = "md",
     defaultValue = "",
     disabled = false,
     error,
@@ -184,6 +228,7 @@ export default function DateInputField({
     const [calendarView, setCalendarView] = useState<CalendarView>("date");
     const [isOpen, setIsOpen] = useState(false);
     const [isCalendarRendered, setIsCalendarRendered] = useState(false);
+    const calendarClasses = calendarSizeClasses[calendarSize];
     const accessibleCalendarLabel =
         calendarLabel ?? (typeof label === "string" ? `${label} date picker` : "Date picker");
     const calendarCells = useMemo(
@@ -371,7 +416,8 @@ export default function DateInputField({
                             }
                         }}
                         className={cn(
-                            "absolute top-full left-0 right-0 z-40 mt-2 origin-top rounded-xl border border-mist-gray/80 bg-white p-3 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-[opacity,transform] duration-150 ease-out",
+                            "absolute top-full left-0 right-0 z-40 mt-2 origin-top rounded-xl border border-mist-gray/80 bg-white shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-[opacity,transform] duration-150 ease-out",
+                            calendarClasses.panel,
                             isOpen
                                 ? "translate-y-0 scale-100 opacity-100"
                                 : "pointer-events-none -translate-y-1 scale-[0.98] opacity-0"
@@ -383,7 +429,10 @@ export default function DateInputField({
                                 tabIndex={isOpen ? undefined : -1}
                                 aria-label={getPreviousLabel()}
                                 onClick={() => moveCalendar(-1)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25"
+                                className={cn(
+                                    "inline-flex items-center justify-center text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                    calendarClasses.navButton
+                                )}
                             >
                                 <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                             </button>
@@ -395,13 +444,21 @@ export default function DateInputField({
                                 tabIndex={isOpen ? undefined : -1}
                                 aria-label={getNextLabel()}
                                 onClick={() => moveCalendar(1)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25"
+                                className={cn(
+                                    "inline-flex items-center justify-center text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                    calendarClasses.navButton
+                                )}
                             >
                                 <ChevronRight className="h-4 w-4" aria-hidden="true" />
                             </button>
                         </div>
 
-                        <div className="mt-3 grid grid-cols-3 rounded-xl bg-cloud-white p-1">
+                        <div
+                            className={cn(
+                                "grid grid-cols-3 bg-cloud-white",
+                                calendarClasses.viewSwitcher
+                            )}
+                        >
                             {(
                                 [
                                     ["date", "Date"],
@@ -416,7 +473,8 @@ export default function DateInputField({
                                     aria-pressed={calendarView === view}
                                     onClick={() => setCalendarView(view)}
                                     className={cn(
-                                        "rounded-lg px-2.5 py-1.5 text-xs font-bold transition-[background-color,color,box-shadow] duration-150 focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                        "font-bold transition-[background-color,color,box-shadow] duration-150 focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                        calendarClasses.viewButton,
                                         calendarView === view
                                             ? "bg-white text-midnight-slate shadow-sm"
                                             : "text-slate-gray hover:text-midnight-slate"
@@ -428,11 +486,19 @@ export default function DateInputField({
                         </div>
 
                         {calendarView === "date" ? (
-                            <div className="mt-3 grid grid-cols-7 gap-1 text-center">
+                            <div
+                                className={cn(
+                                    "grid grid-cols-7 gap-1 text-center",
+                                    calendarClasses.section
+                                )}
+                            >
                                 {weekdayLabels.map((weekday) => (
                                     <span
                                         key={weekday}
-                                        className="py-1 text-xs font-bold text-slate-gray"
+                                        className={cn(
+                                            "font-bold text-slate-gray",
+                                            calendarClasses.weekday
+                                        )}
                                     >
                                         {weekday}
                                     </span>
@@ -448,18 +514,19 @@ export default function DateInputField({
                                         aria-pressed={cell.isSelected}
                                         onClick={() => selectDate(cell.value)}
                                         className={cn(
-                                            "h-8 rounded-lg text-xs font-bold transition-[background-color,color,transform,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                            "font-bold transition-[background-color,color,transform,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                            calendarClasses.dayButton,
                                             cell.isSelected
                                                 ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
                                                 : "text-midnight-slate hover:bg-cloud-white",
                                             !cell.isCurrentMonth &&
-                                                !cell.isSelected &&
-                                                "text-slate-gray/45",
+                                            !cell.isSelected &&
+                                            "text-slate-gray/45",
                                             cell.isToday &&
-                                                !cell.isSelected &&
-                                                "ring-1 ring-luma-blue/35 text-luma-blue",
+                                            !cell.isSelected &&
+                                            "ring-1 ring-luma-blue/35 text-luma-blue",
                                             cell.disabled &&
-                                                "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                            "cursor-not-allowed bg-transparent text-slate-gray/30"
                                         )}
                                     >
                                         {cell.date.getDate()}
@@ -469,7 +536,7 @@ export default function DateInputField({
                         ) : null}
 
                         {calendarView === "month" ? (
-                            <div className="mt-3 grid grid-cols-3 gap-1">
+                            <div className={cn("grid grid-cols-3 gap-1", calendarClasses.section)}>
                                 {monthLabels.map((month, monthIndex) => {
                                     const isSelectedMonth =
                                         selectedDate?.getFullYear() === viewMonth.getFullYear() &&
@@ -496,15 +563,16 @@ export default function DateInputField({
                                                 setCalendarView("date");
                                             }}
                                             className={cn(
-                                                "h-9 rounded-lg text-xs font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                                "font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                                calendarClasses.optionButton,
                                                 isSelectedMonth
                                                     ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
                                                     : "text-midnight-slate hover:bg-cloud-white",
                                                 isCurrentViewMonth &&
-                                                    !isSelectedMonth &&
-                                                    "ring-1 ring-luma-blue/35 text-luma-blue",
+                                                !isSelectedMonth &&
+                                                "ring-1 ring-luma-blue/35 text-luma-blue",
                                                 isDisabled &&
-                                                    "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                                "cursor-not-allowed bg-transparent text-slate-gray/30"
                                             )}
                                         >
                                             {month}
@@ -515,7 +583,7 @@ export default function DateInputField({
                         ) : null}
 
                         {calendarView === "year" ? (
-                            <div className="mt-3 grid grid-cols-3 gap-1">
+                            <div className={cn("grid grid-cols-3 gap-1", calendarClasses.section)}>
                                 {yearRange.map((year) => {
                                     const isSelectedYear = selectedDate?.getFullYear() === year;
                                     const isCurrentViewYear = viewMonth.getFullYear() === year;
@@ -535,15 +603,16 @@ export default function DateInputField({
                                                 setCalendarView("month");
                                             }}
                                             className={cn(
-                                                "h-9 rounded-lg text-xs font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                                "font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                                calendarClasses.optionButton,
                                                 isSelectedYear
                                                     ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
                                                     : "text-midnight-slate hover:bg-cloud-white",
                                                 isCurrentViewYear &&
-                                                    !isSelectedYear &&
-                                                    "ring-1 ring-luma-blue/35 text-luma-blue",
+                                                !isSelectedYear &&
+                                                "ring-1 ring-luma-blue/35 text-luma-blue",
                                                 isDisabled &&
-                                                    "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                                "cursor-not-allowed bg-transparent text-slate-gray/30"
                                             )}
                                         >
                                             {year}
@@ -553,13 +622,21 @@ export default function DateInputField({
                             </div>
                         ) : null}
 
-                        <div className="mt-3 flex items-center justify-between border-t border-mist-gray/70 pt-3">
+                        <div
+                            className={cn(
+                                "flex items-center justify-between border-t border-mist-gray/70",
+                                calendarClasses.footer
+                            )}
+                        >
                             <button
                                 type="button"
                                 tabIndex={isOpen ? undefined : -1}
                                 disabled={!selectedValue}
                                 onClick={() => setDateValue("")}
-                                className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35"
+                                className={cn(
+                                    "font-bold text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35",
+                                    calendarClasses.footerButton
+                                )}
                             >
                                 Clear
                             </button>
@@ -568,7 +645,10 @@ export default function DateInputField({
                                 tabIndex={isOpen ? undefined : -1}
                                 disabled={!canSelectToday}
                                 onClick={() => selectDate(todayValue)}
-                                className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-luma-blue transition-colors duration-150 hover:bg-luma-blue/10 focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35"
+                                className={cn(
+                                    "font-bold text-luma-blue transition-colors duration-150 hover:bg-luma-blue/10 focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35",
+                                    calendarClasses.footerButton
+                                )}
                             >
                                 Today
                             </button>

@@ -20,7 +20,7 @@ const variantClasses: Record<ButtonVariant, string> = {
         "border border-mist-gray/70 bg-white text-midnight-slate shadow-sm hover:bg-cloud-white disabled:opacity-60",
     ghost: "text-midnight-slate hover:bg-cloud-white disabled:text-slate-gray disabled:opacity-60",
     outline:
-        "border border-mist-gray/70 bg-white text-midnight-slate shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-luma-blue/70 hover:bg-luma-blue/10 hover:shadow-[0_14px_24px_-18px_rgba(56,189,248,0.95)] disabled:opacity-60",
+        "border border-mist-gray/70 bg-white text-midnight-slate shadow-sm transition-all duration-200 hover:border-luma-blue/70 hover:bg-luma-blue/10 disabled:opacity-60",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

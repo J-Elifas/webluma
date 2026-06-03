@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
-type ModalSize = "md" | "lg";
+type ModalSize = "sm" | "md" | "lg";
 
 interface ModalProps {
     isOpen: boolean;
@@ -19,6 +19,7 @@ interface ModalProps {
 }
 
 const sizeClasses: Record<ModalSize, string> = {
+    sm: "max-w-md",
     md: "max-w-lg",
     lg: "max-w-2xl",
 };
