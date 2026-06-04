@@ -38,7 +38,7 @@ export default function BillingContent({
                 </Button>
             </section>
 
-            <BillingMetricCards />
+            <BillingMetricCards invoices={invoiceTableData.invoices} />
 
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
                 <BillingInvoicesPanel

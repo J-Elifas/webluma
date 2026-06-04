@@ -1,10 +1,15 @@
-import { InvoiceStatus } from "@prisma/client";
+import { InvoiceStatus, type Prisma } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth/options";
 import type { ClientPlan } from "@/server/clients/types";
 import { prisma } from "@/server/db/prisma";
-import { currencyFormatter, formatShortDate, toUtcDateValue } from "@/lib/utils";
-import type { BillingInvoiceTableData, InvoiceClient, InvoiceStatusTone } from "./types";
+import { currencyFormatter, formatDateValue, formatShortDate, toUtcDateValue } from "@/lib/utils";
+import type {
+    BillingInvoiceRow,
+    BillingInvoiceTableData,
+    InvoiceClient,
+    InvoiceStatusTone,
+} from "./types";
 
 const defaultInvoicePageSize = 8;
 const statusLabels: Record<InvoiceStatus, string> = {
@@ -22,6 +27,70 @@ const actionLabels: Record<InvoiceStatus, string> = {
     [InvoiceStatus.paid]: "View",
     [InvoiceStatus.pending]: "Mark paid",
 };
+const billingInvoiceSelect = {
+    id: true,
+    invoiceNumber: true,
+    amount: true,
+    status: true,
+    dueDate: true,
+    periodStart: true,
+    periodEnd: true,
+    paidAt: true,
+    paymentNotes: true,
+    client: {
+        select: {
+            companyName: true,
+        },
+    },
+} as const;
+
+interface BillingInvoiceRecord {
+    id: string;
+    invoiceNumber: string;
+    amount: Prisma.Decimal;
+    status: InvoiceStatus;
+    dueDate: Date;
+    periodStart: Date;
+    periodEnd: Date;
+    paidAt: Date | null;
+    paymentNotes: string | null;
+    client: {
+        companyName: string;
+    };
+}
+
+function getCurrentInvoiceStatus(invoice: BillingInvoiceRecord, currentDateValue: string) {
+    if (invoice.status === InvoiceStatus.paid) {
+        return InvoiceStatus.paid;
+    }
+
+    return currentDateValue > toUtcDateValue(invoice.dueDate)
+        ? InvoiceStatus.overdue
+        : InvoiceStatus.pending;
+}
+
+function toBillingInvoiceRow(
+    invoice: BillingInvoiceRecord,
+    currentDateValue: string
+): BillingInvoiceRow {
+    const status = getCurrentInvoiceStatus(invoice, currentDateValue);
+
+    return {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        clientName: invoice.client.companyName,
+        billingPeriod: `${formatShortDate(invoice.periodStart)} - ${formatShortDate(invoice.periodEnd)}`,
+        amount: currencyFormatter.format(Number(invoice.amount)),
+        amountValue: Number(invoice.amount),
+        dueDate: formatShortDate(invoice.dueDate),
+        dueDateValue: toUtcDateValue(invoice.dueDate),
+        paidDate: invoice.paidAt ? toUtcDateValue(invoice.paidAt) : undefined,
+        paymentNotes: invoice.paymentNotes ?? undefined,
+        status: statusTones[status],
+        statusLabel: statusLabels[status],
+        actionLabel: actionLabels[status],
+    };
+}
 
 async function getInvoiceUserId() {
     const session = await getServerSession(authOptions);
@@ -105,28 +174,13 @@ export async function getBillingInvoiceTableData(
             userId,
         },
     };
-    const [totalInvoices, invoices] = await Promise.all([
+    const [totalInvoices, invoiceRecords] = await Promise.all([
         prisma.invoice.count({
             where,
         }),
         prisma.invoice.findMany({
             where,
-            select: {
-                id: true,
-                invoiceNumber: true,
-                amount: true,
-                status: true,
-                dueDate: true,
-                periodStart: true,
-                periodEnd: true,
-                paidAt: true,
-                paymentNotes: true,
-                client: {
-                    select: {
-                        companyName: true,
-                    },
-                },
-            },
+            select: billingInvoiceSelect,
             orderBy: [
                 {
                     createdAt: "desc",
@@ -139,21 +193,13 @@ export async function getBillingInvoiceTableData(
             take: safePageSize,
         }),
     ]);
+    const currentDateValue = formatDateValue(new Date());
+    const invoices: BillingInvoiceRow[] = invoiceRecords.map((invoice) =>
+        toBillingInvoiceRow(invoice, currentDateValue)
+    );
 
     return {
-        invoices: invoices.map((invoice) => ({
-            id: invoice.id,
-            invoiceNumber: invoice.invoiceNumber,
-            clientName: invoice.client.companyName,
-            billingPeriod: `${formatShortDate(invoice.periodStart)} - ${formatShortDate(invoice.periodEnd)}`,
-            amount: currencyFormatter.format(Number(invoice.amount)),
-            dueDate: formatShortDate(invoice.dueDate),
-            paidDate: invoice.paidAt ? toUtcDateValue(invoice.paidAt) : undefined,
-            paymentNotes: invoice.paymentNotes ?? undefined,
-            status: statusTones[invoice.status],
-            statusLabel: statusLabels[invoice.status],
-            actionLabel: actionLabels[invoice.status],
-        })),
+        invoices,
         totalInvoices,
         currentPage: safeCurrentPage,
         pageSize: safePageSize,

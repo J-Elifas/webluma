@@ -3,7 +3,7 @@ import { getBillingInvoiceTableData, getInvoiceClient } from "@/server/invoices/
 import BillingPageController from "./BillingPageController";
 
 export default async function BillingPage() {
-    const [invoiceClient, invoiceTableData, billingSession] = await Promise.all([
+    const [invoiceClient, invoiceTableData, billingData] = await Promise.all([
         getInvoiceClient(),
         getBillingInvoiceTableData(),
         getBillingData(),
@@ -13,7 +13,7 @@ export default async function BillingPage() {
         <BillingPageController
             invoiceClient={invoiceClient}
             invoiceTableData={invoiceTableData}
-            isGuest={billingSession.isGuest}
+            isGuest={billingData.isGuest}
         />
     );
 }

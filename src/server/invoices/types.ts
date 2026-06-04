@@ -22,7 +22,9 @@ export interface BillingInvoiceRow {
     clientName: string;
     billingPeriod: string;
     amount: string;
+    amountValue: number;
     dueDate: string;
+    dueDateValue: string;
     paidDate?: string;
     paymentNotes?: string;
     status: InvoiceStatusTone;
