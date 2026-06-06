@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BillingContent from "@/components/billing/BillingContent";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
 import type {
+    BillingInvoiceFilters,
     BillingInvoiceRow,
     BillingInvoiceTableData,
     InvoiceClient,
@@ -25,6 +26,36 @@ interface BillingInvoiceAlert {
     message: string;
 }
 
+const defaultBillingInvoiceFilters: BillingInvoiceFilters = {
+    status: "all",
+    clientId: "all",
+};
+
+function getFilteredInvoiceTableData(
+    tableData: BillingInvoiceTableData,
+    filters: BillingInvoiceFilters
+): BillingInvoiceTableData {
+    const filteredInvoices = tableData.invoices.filter((invoice) => {
+        if (filters.status !== "all" && invoice.status !== filters.status) {
+            return false;
+        }
+
+        if (filters.clientId !== "all" && invoice.clientId !== filters.clientId) {
+            return false;
+        }
+
+        return true;
+    });
+
+    return {
+        ...tableData,
+        invoices: filteredInvoices,
+        currentPage: 1,
+        totalInvoices: filteredInvoices.length,
+        totalPages: Math.max(1, Math.ceil(filteredInvoices.length / tableData.pageSize)),
+    };
+}
+
 export default function BillingPageController({
     invoiceClient,
     invoiceTableData,
@@ -33,8 +64,13 @@ export default function BillingPageController({
     const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = useState(false);
     const [isMarkPaidOpen, setIsMarkPaidOpen] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoiceRow | null>(null);
+    const [invoiceFilters, setInvoiceFilters] = useState(defaultBillingInvoiceFilters);
     const [isLoading, setIsLoading] = useState(false);
     const [alert, setAlert] = useState<BillingInvoiceAlert | null>(null);
+    const filteredInvoiceTableData = useMemo(
+        () => getFilteredInvoiceTableData(invoiceTableData, invoiceFilters),
+        [invoiceFilters, invoiceTableData]
+    );
 
     useEffect(() => {
         if (!alert) {
@@ -73,10 +109,14 @@ export default function BillingPageController({
     return (
         <>
             <BillingContent
+                filteredInvoiceTableData={filteredInvoiceTableData}
+                invoiceClients={invoiceClient}
+                invoiceFilters={invoiceFilters}
                 invoiceTableData={invoiceTableData}
                 isGuest={isGuest}
                 onCreateInvoice={handleCreateInvoiceSelect}
                 onInvoiceAction={handleInvoiceActionSelect}
+                onInvoiceFiltersChange={setInvoiceFilters}
             />
 
             {alert ? (

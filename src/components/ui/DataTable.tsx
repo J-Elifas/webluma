@@ -37,20 +37,16 @@ function getPaginationItems(currentPage: number, totalPages: number) {
     return [1, "ellipsis", currentPage, "ellipsis", totalPages] as const;
 }
 
-export default function DataTable({
-    children,
-    pagination,
-    toolbar,
-}: DataTableProps) {
+export default function DataTable({ children, pagination, toolbar }: DataTableProps) {
     return (
         <article className="min-w-0 overflow-hidden rounded-[1.25rem] border border-mist-gray/70 bg-white shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
             {toolbar ? (
-                <div className="grid gap-3 border-b border-mist-gray/70 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+                <div className="relative z-20 grid gap-3 overflow-visible border-b border-mist-gray/70 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
                     {toolbar}
                 </div>
             ) : null}
 
-            <div className="overflow-x-auto">
+            <div className="relative z-0 overflow-x-auto">
                 <table className="w-full min-w-[880px] text-left">{children}</table>
             </div>
 

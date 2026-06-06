@@ -1,23 +1,38 @@
+"use client";
+
 import { FileText } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
-import type { BillingInvoiceRow, BillingInvoiceTableData } from "@/server/invoices/types";
+import type {
+    BillingInvoiceFilters,
+    BillingInvoiceRow,
+    BillingInvoiceTableData,
+    InvoiceClient,
+} from "@/server/invoices/types";
 import BillingInvoicesPanel from "./BillingInvoicesPanel";
 import BillingMetricCards from "./BillingMetricCards";
 import BillingSidePanel from "./BillingSidePanel";
 
 interface BillingContentProps {
+    filteredInvoiceTableData: BillingInvoiceTableData;
+    invoiceClients: InvoiceClient[];
+    invoiceFilters: BillingInvoiceFilters;
     invoiceTableData: BillingInvoiceTableData;
     isGuest: boolean;
     onCreateInvoice: () => void;
+    onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
 }
 
 export default function BillingContent({
+    filteredInvoiceTableData,
+    invoiceClients,
+    invoiceFilters,
     invoiceTableData,
     isGuest,
     onCreateInvoice,
     onInvoiceAction,
+    onInvoiceFiltersChange,
 }: BillingContentProps) {
     return (
         <>
@@ -42,7 +57,10 @@ export default function BillingContent({
 
             <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
                 <BillingInvoicesPanel
-                    tableData={invoiceTableData}
+                    invoiceClients={invoiceClients}
+                    invoiceFilters={invoiceFilters}
+                    tableData={filteredInvoiceTableData}
+                    onInvoiceFiltersChange={onInvoiceFiltersChange}
                     onInvoiceAction={onInvoiceAction}
                 />
                 <BillingSidePanel />

@@ -1,6 +1,7 @@
 import type { ClientPlan } from "@/server/clients/types";
 
 export type InvoiceStatusTone = "paid" | "pending" | "overdue";
+export type BillingInvoiceStatusFilter = "all" | InvoiceStatusTone;
 
 export interface InvoiceClient {
     id: string;
@@ -19,6 +20,7 @@ export interface InvoiceClient {
 export interface BillingInvoiceRow {
     id: string;
     invoiceNumber: string;
+    clientId: string;
     clientName: string;
     billingPeriod: string;
     amount: string;
@@ -38,6 +40,11 @@ export interface BillingInvoiceTableData {
     currentPage: number;
     pageSize: number;
     totalPages: number;
+}
+
+export interface BillingInvoiceFilters {
+    status: BillingInvoiceStatusFilter;
+    clientId: string;
 }
 
 export interface CreateInvoiceInput {

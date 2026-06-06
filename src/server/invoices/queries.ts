@@ -29,6 +29,7 @@ const actionLabels: Record<InvoiceStatus, string> = {
 };
 const billingInvoiceSelect = {
     id: true,
+    clientId: true,
     invoiceNumber: true,
     amount: true,
     status: true,
@@ -46,6 +47,7 @@ const billingInvoiceSelect = {
 
 interface BillingInvoiceRecord {
     id: string;
+    clientId: string;
     invoiceNumber: string;
     amount: Prisma.Decimal;
     status: InvoiceStatus;
@@ -78,6 +80,7 @@ function toBillingInvoiceRow(
     return {
         id: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
+        clientId: invoice.clientId,
         clientName: invoice.client.companyName,
         billingPeriod: `${formatShortDate(invoice.periodStart)} - ${formatShortDate(invoice.periodEnd)}`,
         amount: currencyFormatter.format(Number(invoice.amount)),

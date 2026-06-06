@@ -1,16 +1,17 @@
-import { CalendarDays, Download, MoreVertical } from "lucide-react";
-import DataTable, {
-    TableFilterChip,
-    TablePagination,
-    TableSearch,
-} from "@/components/ui/DataTable";
+"use client";
+
+import { Download, MoreVertical } from "lucide-react";
+import DataTable, { TablePagination, TableSearch } from "@/components/ui/DataTable";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import type {
+    BillingInvoiceFilters,
     BillingInvoiceRow,
     BillingInvoiceTableData,
+    InvoiceClient,
     InvoiceStatusTone,
 } from "@/server/invoices/types";
+import BillingInvoiceFilterPopover from "./BillingInvoiceFilterPopover";
 
 interface InvoiceStatusPillProps {
     children: string;
@@ -18,7 +19,10 @@ interface InvoiceStatusPillProps {
 }
 
 interface BillingInvoicesPanelProps {
+    invoiceClients: InvoiceClient[];
+    invoiceFilters: BillingInvoiceFilters;
     tableData: BillingInvoiceTableData;
+    onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
 }
 
@@ -42,7 +46,10 @@ function InvoiceStatusPill({ children, tone }: InvoiceStatusPillProps) {
 }
 
 export default function BillingInvoicesPanel({
+    invoiceClients,
+    invoiceFilters,
     onInvoiceAction,
+    onInvoiceFiltersChange,
     tableData,
 }: BillingInvoicesPanelProps) {
     const { currentPage, invoices, pageSize, totalInvoices, totalPages } = tableData;
@@ -56,19 +63,11 @@ export default function BillingInvoicesPanel({
                             label="Invoice search preview"
                             placeholder="Search invoices or clients..."
                         />
-
-                        <TableFilterChip>Status: All</TableFilterChip>
-                        <TableFilterChip>Client: All</TableFilterChip>
-                        <TableFilterChip
-                            icon={
-                                <CalendarDays
-                                    className="h-4 w-4 text-slate-gray"
-                                    aria-hidden="true"
-                                />
-                            }
-                        >
-                            This Month
-                        </TableFilterChip>
+                        <BillingInvoiceFilterPopover
+                            clients={invoiceClients}
+                            filters={invoiceFilters}
+                            onFiltersChange={onInvoiceFiltersChange}
+                        />
                     </div>
 
                     <span className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-4 text-sm font-semibold text-midnight-slate shadow-sm">

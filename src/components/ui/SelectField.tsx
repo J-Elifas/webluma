@@ -276,7 +276,7 @@ export default function SelectField({
                             }
                         }}
                         className={cn(
-                            "absolute top-full left-0 right-0 z-40 mt-2 origin-top overflow-hidden rounded-xl border border-mist-gray/80 bg-white p-1 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-[opacity,transform] duration-150 ease-out",
+                            "absolute top-full left-0 right-0 z-40 mt-2 origin-top overflow-hidden rounded-xl border border-mist-gray/80 bg-white p-1 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-all duration-150 ease-out",
                             isOpen
                                 ? "translate-y-0 scale-100 opacity-100"
                                 : "pointer-events-none -translate-y-1 scale-[0.98] opacity-0"
