@@ -17,10 +17,12 @@ interface BillingContentProps {
     filteredInvoiceTableData: BillingInvoiceTableData;
     invoiceClients: InvoiceClient[];
     invoiceFilters: BillingInvoiceFilters;
+    invoiceSearchQuery: string;
     invoiceTableData: BillingInvoiceTableData;
     isGuest: boolean;
     onCreateInvoice: () => void;
     onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
+    onInvoiceSearchQueryChange: (query: string) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
 }
 
@@ -28,11 +30,13 @@ export default function BillingContent({
     filteredInvoiceTableData,
     invoiceClients,
     invoiceFilters,
+    invoiceSearchQuery,
     invoiceTableData,
     isGuest,
     onCreateInvoice,
     onInvoiceAction,
     onInvoiceFiltersChange,
+    onInvoiceSearchQueryChange,
 }: BillingContentProps) {
     return (
         <>
@@ -59,8 +63,10 @@ export default function BillingContent({
                 <BillingInvoicesPanel
                     invoiceClients={invoiceClients}
                     invoiceFilters={invoiceFilters}
+                    invoiceSearchQuery={invoiceSearchQuery}
                     tableData={filteredInvoiceTableData}
                     onInvoiceFiltersChange={onInvoiceFiltersChange}
+                    onInvoiceSearchQueryChange={onInvoiceSearchQueryChange}
                     onInvoiceAction={onInvoiceAction}
                 />
                 <BillingSidePanel />

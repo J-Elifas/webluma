@@ -21,8 +21,10 @@ interface InvoiceStatusPillProps {
 interface BillingInvoicesPanelProps {
     invoiceClients: InvoiceClient[];
     invoiceFilters: BillingInvoiceFilters;
+    invoiceSearchQuery: string;
     tableData: BillingInvoiceTableData;
     onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
+    onInvoiceSearchQueryChange: (query: string) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
 }
 
@@ -48,8 +50,10 @@ function InvoiceStatusPill({ children, tone }: InvoiceStatusPillProps) {
 export default function BillingInvoicesPanel({
     invoiceClients,
     invoiceFilters,
+    invoiceSearchQuery,
     onInvoiceAction,
     onInvoiceFiltersChange,
+    onInvoiceSearchQueryChange,
     tableData,
 }: BillingInvoicesPanelProps) {
     const { currentPage, invoices, pageSize, totalInvoices, totalPages } = tableData;
@@ -60,8 +64,10 @@ export default function BillingInvoicesPanel({
                 <>
                     <div className="flex flex-wrap gap-3">
                         <TableSearch
-                            label="Invoice search preview"
+                            label="Search invoices"
+                            value={invoiceSearchQuery}
                             placeholder="Search invoices or clients..."
+                            onValueChange={onInvoiceSearchQueryChange}
                         />
                         <BillingInvoiceFilter
                             clients={invoiceClients}

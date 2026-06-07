@@ -35,8 +35,10 @@ const defaultBillingInvoiceFilters: BillingInvoiceFilters = {
 
 function getFilteredInvoiceTableData(
     tableData: BillingInvoiceTableData,
-    filters: BillingInvoiceFilters
+    filters: BillingInvoiceFilters,
+    searchQuery: string
 ): BillingInvoiceTableData {
+    const searchTerms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
     const filteredInvoices = tableData.invoices.filter((invoice) => {
         if (filters.status !== "all" && invoice.status !== filters.status) {
             return false;
@@ -52,6 +54,26 @@ function getFilteredInvoiceTableData(
 
         if (filters.dueDateEnd && invoice.dueDateValue > filters.dueDateEnd) {
             return false;
+        }
+
+        if (searchTerms.length > 0) {
+            const searchableInvoiceText = [
+                invoice.invoiceNumber,
+                invoice.clientName,
+                invoice.billingPeriod,
+                invoice.amount,
+                invoice.amountValue.toString(),
+                invoice.dueDate,
+                invoice.dueDateValue,
+                invoice.statusLabel,
+                invoice.paymentNotes ?? "",
+            ]
+                .join(" ")
+                .toLowerCase();
+
+            if (!searchTerms.every((term) => searchableInvoiceText.includes(term))) {
+                return false;
+            }
         }
 
         return true;
@@ -75,11 +97,12 @@ export default function BillingPageController({
     const [isMarkPaidOpen, setIsMarkPaidOpen] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoiceRow | null>(null);
     const [invoiceFilters, setInvoiceFilters] = useState(defaultBillingInvoiceFilters);
+    const [invoiceSearchQuery, setInvoiceSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [alert, setAlert] = useState<BillingInvoiceAlert | null>(null);
     const filteredInvoiceTableData = useMemo(
-        () => getFilteredInvoiceTableData(invoiceTableData, invoiceFilters),
-        [invoiceFilters, invoiceTableData]
+        () => getFilteredInvoiceTableData(invoiceTableData, invoiceFilters, invoiceSearchQuery),
+        [invoiceFilters, invoiceSearchQuery, invoiceTableData]
     );
 
     useEffect(() => {
@@ -122,11 +145,13 @@ export default function BillingPageController({
                 filteredInvoiceTableData={filteredInvoiceTableData}
                 invoiceClients={invoiceClient}
                 invoiceFilters={invoiceFilters}
+                invoiceSearchQuery={invoiceSearchQuery}
                 invoiceTableData={invoiceTableData}
                 isGuest={isGuest}
                 onCreateInvoice={handleCreateInvoiceSelect}
                 onInvoiceAction={handleInvoiceActionSelect}
                 onInvoiceFiltersChange={setInvoiceFilters}
+                onInvoiceSearchQueryChange={setInvoiceSearchQuery}
             />
 
             {alert ? (

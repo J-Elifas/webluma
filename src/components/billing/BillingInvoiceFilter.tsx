@@ -189,6 +189,7 @@ export default function BillingInvoiceFilter({
 
     function handleResetDraft() {
         setDraftFilters(defaultBillingInvoiceFilters);
+        onFiltersChange(defaultBillingInvoiceFilters);
     }
 
     function handleApply(event: FormEvent<HTMLFormElement>) {
@@ -268,7 +269,7 @@ export default function BillingInvoiceFilter({
                     >
                         <div className="flex items-center justify-between gap-3 border-b border-mist-gray/70 pb-3">
                             <p className="text-sm font-black text-midnight-slate">
-                                Filter invoices
+                                Filter
                             </p>
                             <button
                                 type="button"

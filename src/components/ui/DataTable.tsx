@@ -9,7 +9,9 @@ interface DataTableProps {
 
 interface TableSearchProps {
     label: string;
+    onValueChange: (value: string) => void;
     placeholder: string;
+    value: string;
 }
 
 interface TablePaginationProps {
@@ -55,15 +57,21 @@ export default function DataTable({ children, pagination, toolbar }: DataTablePr
     );
 }
 
-export function TableSearch({ label, placeholder }: TableSearchProps) {
+export function TableSearch({ label, onValueChange, placeholder, value }: TableSearchProps) {
     return (
         <div
-            className="flex h-10 min-w-[min(100%,16rem)] flex-1 items-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-semibold text-slate-gray shadow-sm"
+            className="flex h-10 min-w-[min(100%,16rem)] flex-1 items-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-semibold text-slate-gray shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-luma-blue focus-within:ring-2 focus-within:ring-luma-blue/25"
             role="search"
-            aria-label={label}
         >
             <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className="truncate">{placeholder}</span>
+            <input
+                type="search"
+                aria-label={label}
+                value={value}
+                placeholder={placeholder}
+                onChange={(event) => onValueChange(event.target.value)}
+                className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-midnight-slate placeholder:text-slate-gray focus:outline-none"
+            />
         </div>
     );
 }
