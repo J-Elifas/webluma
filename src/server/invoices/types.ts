@@ -45,6 +45,8 @@ export interface BillingInvoiceTableData {
 export interface BillingInvoiceFilters {
     status: BillingInvoiceStatusFilter;
     clientId: string;
+    dueDateStart: string;
+    dueDateEnd: string;
 }
 
 export interface CreateInvoiceInput {

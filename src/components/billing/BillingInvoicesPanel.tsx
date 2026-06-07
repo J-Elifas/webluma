@@ -11,7 +11,7 @@ import type {
     InvoiceClient,
     InvoiceStatusTone,
 } from "@/server/invoices/types";
-import BillingInvoiceFilterPopover from "./BillingInvoiceFilterPopover";
+import BillingInvoiceFilter from "./BillingInvoiceFilter";
 
 interface InvoiceStatusPillProps {
     children: string;
@@ -63,7 +63,7 @@ export default function BillingInvoicesPanel({
                             label="Invoice search preview"
                             placeholder="Search invoices or clients..."
                         />
-                        <BillingInvoiceFilterPopover
+                        <BillingInvoiceFilter
                             clients={invoiceClients}
                             filters={invoiceFilters}
                             onFiltersChange={onInvoiceFiltersChange}

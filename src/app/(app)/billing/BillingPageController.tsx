@@ -29,6 +29,8 @@ interface BillingInvoiceAlert {
 const defaultBillingInvoiceFilters: BillingInvoiceFilters = {
     status: "all",
     clientId: "all",
+    dueDateStart: "",
+    dueDateEnd: "",
 };
 
 function getFilteredInvoiceTableData(
@@ -41,6 +43,14 @@ function getFilteredInvoiceTableData(
         }
 
         if (filters.clientId !== "all" && invoice.clientId !== filters.clientId) {
+            return false;
+        }
+
+        if (filters.dueDateStart && invoice.dueDateValue < filters.dueDateStart) {
+            return false;
+        }
+
+        if (filters.dueDateEnd && invoice.dueDateValue > filters.dueDateEnd) {
             return false;
         }
 

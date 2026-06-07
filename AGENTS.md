@@ -35,6 +35,7 @@ Keep server-only feature code in `src/server/<feature>/`:
 - Use 4-space indentation and keep components focused.
 - All React component files must use PascalCase, for example `LoginForm.tsx`, `LoginCard.tsx`, `IllustrationPanel.tsx`, and `DashboardContent.tsx`.
 - All React component function/export names must use PascalCase and should match the file name.
+- Name component files by product purpose, not UI implementation; avoid suffixes like `Popover`, `Modal`, or `Dropdown` unless the component is truly reusable UI infrastructure.
 - Use App Router conventions for routes (`page.tsx`, `layout.tsx`, route groups, and dynamic segments like `[id]`).
 - Use conventional server module names such as `queries.ts`, `mutations.ts`, `types.ts`, `options.ts`, and `password.ts`.
 - Use kebab-case for general utilities when a convention-specific name does not apply.

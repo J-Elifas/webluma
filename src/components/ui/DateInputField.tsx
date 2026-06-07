@@ -2,6 +2,7 @@
 
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import FieldLabel from "./FieldLabel";
 import { fieldControlClasses } from "./field-styles";
@@ -22,7 +23,9 @@ interface DateInputFieldProps {
     triggerClassName?: string;
     labelClassName?: string;
     calendarLabel?: string;
+    calendarPlacement?: DateInputCalendarPlacement;
     calendarSize?: DateInputCalendarSize;
+    mobileCalendarPresentation?: DateInputMobileCalendarPresentation;
     onValueChange?: (value: string) => void;
 }
 
@@ -36,7 +39,9 @@ interface CalendarCell {
 }
 
 type CalendarView = "date" | "month" | "year";
+type DateInputCalendarPlacement = "bottom" | "top";
 type DateInputCalendarSize = "md" | "sm";
+type DateInputMobileCalendarPresentation = "inline" | "center";
 
 const calendarSizeClasses: Record<
     DateInputCalendarSize,
@@ -197,6 +202,7 @@ function getYearRange(viewMonth: Date) {
 
 export default function DateInputField({
     calendarLabel,
+    calendarPlacement = "bottom",
     calendarSize = "md",
     defaultValue = "",
     disabled = false,
@@ -207,6 +213,7 @@ export default function DateInputField({
     labelClassName,
     max,
     min,
+    mobileCalendarPresentation = "inline",
     name,
     onValueChange,
     placeholder = "Select a date",
@@ -217,6 +224,7 @@ export default function DateInputField({
     const calendarId = useId();
     const errorId = `${id}-error`;
     const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const calendarRef = useRef<HTMLDivElement | null>(null);
     const triggerRef = useRef<HTMLButtonElement | null>(null);
     const isControlled = value !== undefined;
     const [internalValue, setInternalValue] = useState(defaultValue);
@@ -228,7 +236,9 @@ export default function DateInputField({
     const [calendarView, setCalendarView] = useState<CalendarView>("date");
     const [isOpen, setIsOpen] = useState(false);
     const [isCalendarRendered, setIsCalendarRendered] = useState(false);
+    const [isMobileViewport, setIsMobileViewport] = useState(false);
     const calendarClasses = calendarSizeClasses[calendarSize];
+    const shouldCenterCalendar = mobileCalendarPresentation === "center" && isMobileViewport;
     const accessibleCalendarLabel =
         calendarLabel ?? (typeof label === "string" ? `${label} date picker` : "Date picker");
     const calendarCells = useMemo(
@@ -290,6 +300,38 @@ export default function DateInputField({
     }
 
     useEffect(() => {
+        if (mobileCalendarPresentation !== "center" || typeof window.matchMedia !== "function") {
+            return;
+        }
+
+        const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+        function handleViewportChange() {
+            setIsMobileViewport(mediaQuery.matches);
+        }
+
+        handleViewportChange();
+        mediaQuery.addEventListener("change", handleViewportChange);
+
+        return () => {
+            mediaQuery.removeEventListener("change", handleViewportChange);
+        };
+    }, [mobileCalendarPresentation]);
+
+    useEffect(() => {
+        if (!isOpen || !shouldCenterCalendar) {
+            return;
+        }
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [isOpen, shouldCenterCalendar]);
+
+    useEffect(() => {
         if (!isOpen) {
             return;
         }
@@ -297,7 +339,10 @@ export default function DateInputField({
         function handlePointerDown(event: PointerEvent) {
             const target = event.target;
 
-            if (target instanceof Node && wrapperRef.current?.contains(target)) {
+            if (
+                target instanceof Node &&
+                (wrapperRef.current?.contains(target) || calendarRef.current?.contains(target))
+            ) {
                 return;
             }
 
@@ -343,15 +388,307 @@ export default function DateInputField({
             setViewMonth(toMonthStart(nextDate));
         }
 
-        triggerRef.current?.focus();
         closeCalendar();
     }
+
+    function renderCalendarPanel() {
+        if (!isCalendarRendered) {
+            return null;
+        }
+
+        return (
+            <div
+                ref={calendarRef}
+                id={calendarId}
+                role="dialog"
+                aria-label={accessibleCalendarLabel}
+                onTransitionEnd={(event) => {
+                    if (event.target === event.currentTarget && !isOpen) {
+                        setIsCalendarRendered(false);
+                    }
+                }}
+                className={cn(
+                    shouldCenterCalendar
+                        ? "fixed left-1/2 top-1/2 z-[60] w-[calc(100vw-2rem)] max-w-xs -translate-x-1/2 -translate-y-1/2 origin-center rounded-xl border border-mist-gray/80 bg-white shadow-[0_24px_70px_-34px_rgba(15,23,42,0.65)] transition-[opacity,transform] duration-150 ease-out"
+                        : "absolute left-0 right-0 z-40 rounded-xl border border-mist-gray/80 bg-white shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-[opacity,transform] duration-150 ease-out",
+                    !shouldCenterCalendar &&
+                        (calendarPlacement === "top"
+                            ? "bottom-full mb-2 origin-bottom"
+                            : "top-full mt-2 origin-top"),
+                    calendarClasses.panel,
+                    isOpen ? "scale-100 opacity-100" : "pointer-events-none scale-[0.98] opacity-0",
+                    !shouldCenterCalendar && (isOpen ? "translate-y-0" : "-translate-y-1")
+                )}
+            >
+                <div className="flex items-center justify-between gap-2">
+                    <button
+                        type="button"
+                        tabIndex={isOpen ? undefined : -1}
+                        aria-label={getPreviousLabel()}
+                        onClick={() => moveCalendar(-1)}
+                        className={cn(
+                            "inline-flex items-center justify-center text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                            calendarClasses.navButton
+                        )}
+                    >
+                        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                    <p className="text-sm font-bold text-midnight-slate">{getHeaderLabel()}</p>
+                    <button
+                        type="button"
+                        tabIndex={isOpen ? undefined : -1}
+                        aria-label={getNextLabel()}
+                        onClick={() => moveCalendar(1)}
+                        className={cn(
+                            "inline-flex items-center justify-center text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                            calendarClasses.navButton
+                        )}
+                    >
+                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                </div>
+
+                <div
+                    className={cn("grid grid-cols-3 bg-cloud-white", calendarClasses.viewSwitcher)}
+                >
+                    {(
+                        [
+                            ["date", "Date"],
+                            ["month", "Month"],
+                            ["year", "Year"],
+                        ] as const
+                    ).map(([view, viewLabel]) => (
+                        <button
+                            key={view}
+                            type="button"
+                            tabIndex={isOpen ? undefined : -1}
+                            aria-pressed={calendarView === view}
+                            onClick={() => setCalendarView(view)}
+                            className={cn(
+                                "font-bold transition-[background-color,color,box-shadow] duration-150 focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                calendarClasses.viewButton,
+                                calendarView === view
+                                    ? "bg-white text-midnight-slate shadow-sm"
+                                    : "text-slate-gray hover:text-midnight-slate"
+                            )}
+                        >
+                            {viewLabel}
+                        </button>
+                    ))}
+                </div>
+
+                {calendarView === "date" ? (
+                    <div
+                        className={cn(
+                            "grid grid-cols-7 gap-1 text-center",
+                            calendarClasses.section
+                        )}
+                    >
+                        {weekdayLabels.map((weekday) => (
+                            <span
+                                key={weekday}
+                                className={cn("font-bold text-slate-gray", calendarClasses.weekday)}
+                            >
+                                {weekday}
+                            </span>
+                        ))}
+                        {calendarCells.map((cell) => (
+                            <button
+                                key={cell.value}
+                                type="button"
+                                tabIndex={isOpen ? undefined : -1}
+                                disabled={cell.disabled}
+                                aria-label={formatDisplayDate(cell.value)}
+                                aria-current={cell.isToday ? "date" : undefined}
+                                aria-pressed={cell.isSelected}
+                                onClick={() => {
+                                    selectDate(cell.value);
+                                    triggerRef.current?.focus();
+                                }}
+                                className={cn(
+                                    "font-bold transition-[background-color,color,transform,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                    calendarClasses.dayButton,
+                                    cell.isSelected
+                                        ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
+                                        : "text-midnight-slate hover:bg-cloud-white",
+                                    !cell.isCurrentMonth &&
+                                        !cell.isSelected &&
+                                        "text-slate-gray/45",
+                                    cell.isToday &&
+                                        !cell.isSelected &&
+                                        "ring-1 ring-luma-blue/35 text-luma-blue",
+                                    cell.disabled &&
+                                        "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                )}
+                            >
+                                {cell.date.getDate()}
+                            </button>
+                        ))}
+                    </div>
+                ) : null}
+
+                {calendarView === "month" ? (
+                    <div className={cn("grid grid-cols-3 gap-1", calendarClasses.section)}>
+                        {monthLabels.map((month, monthIndex) => {
+                            const isSelectedMonth =
+                                selectedDate?.getFullYear() === viewMonth.getFullYear() &&
+                                selectedDate.getMonth() === monthIndex;
+                            const isCurrentViewMonth = viewMonth.getMonth() === monthIndex;
+                            const isDisabled = isMonthOutsideRange(
+                                viewMonth.getFullYear(),
+                                monthIndex,
+                                min,
+                                max
+                            );
+
+                            return (
+                                <button
+                                    key={month}
+                                    type="button"
+                                    tabIndex={isOpen ? undefined : -1}
+                                    disabled={isDisabled}
+                                    aria-pressed={isSelectedMonth}
+                                    onClick={() => {
+                                        setViewMonth(
+                                            new Date(viewMonth.getFullYear(), monthIndex, 1)
+                                        );
+                                        setCalendarView("date");
+                                    }}
+                                    className={cn(
+                                        "font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                        calendarClasses.optionButton,
+                                        isSelectedMonth
+                                            ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
+                                            : "text-midnight-slate hover:bg-cloud-white",
+                                        isCurrentViewMonth &&
+                                            !isSelectedMonth &&
+                                            "ring-1 ring-luma-blue/35 text-luma-blue",
+                                        isDisabled &&
+                                            "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                    )}
+                                >
+                                    {month}
+                                </button>
+                            );
+                        })}
+                    </div>
+                ) : null}
+
+                {calendarView === "year" ? (
+                    <div className={cn("grid grid-cols-3 gap-1", calendarClasses.section)}>
+                        {yearRange.map((year) => {
+                            const isSelectedYear = selectedDate?.getFullYear() === year;
+                            const isCurrentViewYear = viewMonth.getFullYear() === year;
+                            const isDisabled = isYearOutsideRange(year, min, max);
+
+                            return (
+                                <button
+                                    key={year}
+                                    type="button"
+                                    tabIndex={isOpen ? undefined : -1}
+                                    disabled={isDisabled}
+                                    aria-pressed={isSelectedYear}
+                                    onClick={() => {
+                                        setViewMonth(new Date(year, viewMonth.getMonth(), 1));
+                                        setCalendarView("month");
+                                    }}
+                                    className={cn(
+                                        "font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
+                                        calendarClasses.optionButton,
+                                        isSelectedYear
+                                            ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
+                                            : "text-midnight-slate hover:bg-cloud-white",
+                                        isCurrentViewYear &&
+                                            !isSelectedYear &&
+                                            "ring-1 ring-luma-blue/35 text-luma-blue",
+                                        isDisabled &&
+                                            "cursor-not-allowed bg-transparent text-slate-gray/30"
+                                    )}
+                                >
+                                    {year}
+                                </button>
+                            );
+                        })}
+                    </div>
+                ) : null}
+
+                <div
+                    className={cn(
+                        "flex items-center justify-between border-t border-mist-gray/70",
+                        calendarClasses.footer
+                    )}
+                >
+                    <button
+                        type="button"
+                        tabIndex={isOpen ? undefined : -1}
+                        disabled={!selectedValue}
+                        onClick={() => setDateValue("")}
+                        className={cn(
+                            "font-bold text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35",
+                            calendarClasses.footerButton
+                        )}
+                    >
+                        Clear
+                    </button>
+                    <button
+                        type="button"
+                        tabIndex={isOpen ? undefined : -1}
+                        disabled={!canSelectToday}
+                        onClick={() => {
+                            selectDate(todayValue);
+                            triggerRef.current?.focus();
+                        }}
+                        className={cn(
+                            "font-bold text-luma-blue transition-colors duration-150 hover:bg-luma-blue/10 focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35",
+                            calendarClasses.footerButton
+                        )}
+                    >
+                        Today
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const calendarPanel = renderCalendarPanel();
+    const renderedCalendar =
+        shouldCenterCalendar && calendarPanel
+            ? createPortal(
+                  <div
+                      className={cn(
+                          "fixed inset-0 z-[55] bg-midnight-slate/35 backdrop-blur-[2px] transition-opacity duration-150 ease-out",
+                          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+                      )}
+                      onMouseDown={(event) => {
+                          if (event.target === event.currentTarget) {
+                              closeCalendar();
+                          }
+
+                          event.stopPropagation();
+                      }}
+                      onPointerDown={(event) => {
+                          if (event.target === event.currentTarget) {
+                              closeCalendar();
+                          }
+
+                          event.stopPropagation();
+                      }}
+                  >
+                      {calendarPanel}
+                  </div>,
+                  document.body
+              )
+            : calendarPanel;
 
     return (
         <div
             ref={wrapperRef}
             className={cn("relative", wrapperClassName)}
             onBlur={(event) => {
+                if (shouldCenterCalendar) {
+                    return;
+                }
+
                 if (
                     !(event.relatedTarget instanceof Node) ||
                     !event.currentTarget.contains(event.relatedTarget)
@@ -405,256 +742,7 @@ export default function DateInputField({
                         aria-hidden="true"
                     />
                 </button>
-                {isCalendarRendered ? (
-                    <div
-                        id={calendarId}
-                        role="dialog"
-                        aria-label={accessibleCalendarLabel}
-                        onTransitionEnd={(event) => {
-                            if (event.target === event.currentTarget && !isOpen) {
-                                setIsCalendarRendered(false);
-                            }
-                        }}
-                        className={cn(
-                            "absolute top-full left-0 right-0 z-40 mt-2 origin-top rounded-xl border border-mist-gray/80 bg-white shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-[opacity,transform] duration-150 ease-out",
-                            calendarClasses.panel,
-                            isOpen
-                                ? "translate-y-0 scale-100 opacity-100"
-                                : "pointer-events-none -translate-y-1 scale-[0.98] opacity-0"
-                        )}
-                    >
-                        <div className="flex items-center justify-between gap-2">
-                            <button
-                                type="button"
-                                tabIndex={isOpen ? undefined : -1}
-                                aria-label={getPreviousLabel()}
-                                onClick={() => moveCalendar(-1)}
-                                className={cn(
-                                    "inline-flex items-center justify-center text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
-                                    calendarClasses.navButton
-                                )}
-                            >
-                                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                            <p className="text-sm font-bold text-midnight-slate">
-                                {getHeaderLabel()}
-                            </p>
-                            <button
-                                type="button"
-                                tabIndex={isOpen ? undefined : -1}
-                                aria-label={getNextLabel()}
-                                onClick={() => moveCalendar(1)}
-                                className={cn(
-                                    "inline-flex items-center justify-center text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
-                                    calendarClasses.navButton
-                                )}
-                            >
-                                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                            </button>
-                        </div>
-
-                        <div
-                            className={cn(
-                                "grid grid-cols-3 bg-cloud-white",
-                                calendarClasses.viewSwitcher
-                            )}
-                        >
-                            {(
-                                [
-                                    ["date", "Date"],
-                                    ["month", "Month"],
-                                    ["year", "Year"],
-                                ] as const
-                            ).map(([view, viewLabel]) => (
-                                <button
-                                    key={view}
-                                    type="button"
-                                    tabIndex={isOpen ? undefined : -1}
-                                    aria-pressed={calendarView === view}
-                                    onClick={() => setCalendarView(view)}
-                                    className={cn(
-                                        "font-bold transition-[background-color,color,box-shadow] duration-150 focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
-                                        calendarClasses.viewButton,
-                                        calendarView === view
-                                            ? "bg-white text-midnight-slate shadow-sm"
-                                            : "text-slate-gray hover:text-midnight-slate"
-                                    )}
-                                >
-                                    {viewLabel}
-                                </button>
-                            ))}
-                        </div>
-
-                        {calendarView === "date" ? (
-                            <div
-                                className={cn(
-                                    "grid grid-cols-7 gap-1 text-center",
-                                    calendarClasses.section
-                                )}
-                            >
-                                {weekdayLabels.map((weekday) => (
-                                    <span
-                                        key={weekday}
-                                        className={cn(
-                                            "font-bold text-slate-gray",
-                                            calendarClasses.weekday
-                                        )}
-                                    >
-                                        {weekday}
-                                    </span>
-                                ))}
-                                {calendarCells.map((cell) => (
-                                    <button
-                                        key={cell.value}
-                                        type="button"
-                                        tabIndex={isOpen ? undefined : -1}
-                                        disabled={cell.disabled}
-                                        aria-label={formatDisplayDate(cell.value)}
-                                        aria-current={cell.isToday ? "date" : undefined}
-                                        aria-pressed={cell.isSelected}
-                                        onClick={() => selectDate(cell.value)}
-                                        className={cn(
-                                            "font-bold transition-[background-color,color,transform,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
-                                            calendarClasses.dayButton,
-                                            cell.isSelected
-                                                ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
-                                                : "text-midnight-slate hover:bg-cloud-white",
-                                            !cell.isCurrentMonth &&
-                                                !cell.isSelected &&
-                                                "text-slate-gray/45",
-                                            cell.isToday &&
-                                                !cell.isSelected &&
-                                                "ring-1 ring-luma-blue/35 text-luma-blue",
-                                            cell.disabled &&
-                                                "cursor-not-allowed bg-transparent text-slate-gray/30"
-                                        )}
-                                    >
-                                        {cell.date.getDate()}
-                                    </button>
-                                ))}
-                            </div>
-                        ) : null}
-
-                        {calendarView === "month" ? (
-                            <div className={cn("grid grid-cols-3 gap-1", calendarClasses.section)}>
-                                {monthLabels.map((month, monthIndex) => {
-                                    const isSelectedMonth =
-                                        selectedDate?.getFullYear() === viewMonth.getFullYear() &&
-                                        selectedDate.getMonth() === monthIndex;
-                                    const isCurrentViewMonth = viewMonth.getMonth() === monthIndex;
-                                    const isDisabled = isMonthOutsideRange(
-                                        viewMonth.getFullYear(),
-                                        monthIndex,
-                                        min,
-                                        max
-                                    );
-
-                                    return (
-                                        <button
-                                            key={month}
-                                            type="button"
-                                            tabIndex={isOpen ? undefined : -1}
-                                            disabled={isDisabled}
-                                            aria-pressed={isSelectedMonth}
-                                            onClick={() => {
-                                                setViewMonth(
-                                                    new Date(viewMonth.getFullYear(), monthIndex, 1)
-                                                );
-                                                setCalendarView("date");
-                                            }}
-                                            className={cn(
-                                                "font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
-                                                calendarClasses.optionButton,
-                                                isSelectedMonth
-                                                    ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
-                                                    : "text-midnight-slate hover:bg-cloud-white",
-                                                isCurrentViewMonth &&
-                                                    !isSelectedMonth &&
-                                                    "ring-1 ring-luma-blue/35 text-luma-blue",
-                                                isDisabled &&
-                                                    "cursor-not-allowed bg-transparent text-slate-gray/30"
-                                            )}
-                                        >
-                                            {month}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        ) : null}
-
-                        {calendarView === "year" ? (
-                            <div className={cn("grid grid-cols-3 gap-1", calendarClasses.section)}>
-                                {yearRange.map((year) => {
-                                    const isSelectedYear = selectedDate?.getFullYear() === year;
-                                    const isCurrentViewYear = viewMonth.getFullYear() === year;
-                                    const isDisabled = isYearOutsideRange(year, min, max);
-
-                                    return (
-                                        <button
-                                            key={year}
-                                            type="button"
-                                            tabIndex={isOpen ? undefined : -1}
-                                            disabled={isDisabled}
-                                            aria-pressed={isSelectedYear}
-                                            onClick={() => {
-                                                setViewMonth(
-                                                    new Date(year, viewMonth.getMonth(), 1)
-                                                );
-                                                setCalendarView("month");
-                                            }}
-                                            className={cn(
-                                                "font-bold transition-[background-color,color,box-shadow] duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-luma-blue/25",
-                                                calendarClasses.optionButton,
-                                                isSelectedYear
-                                                    ? "bg-luma-blue text-white shadow-[0_10px_24px_-18px_rgba(56,189,248,0.9)]"
-                                                    : "text-midnight-slate hover:bg-cloud-white",
-                                                isCurrentViewYear &&
-                                                    !isSelectedYear &&
-                                                    "ring-1 ring-luma-blue/35 text-luma-blue",
-                                                isDisabled &&
-                                                    "cursor-not-allowed bg-transparent text-slate-gray/30"
-                                            )}
-                                        >
-                                            {year}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        ) : null}
-
-                        <div
-                            className={cn(
-                                "flex items-center justify-between border-t border-mist-gray/70",
-                                calendarClasses.footer
-                            )}
-                        >
-                            <button
-                                type="button"
-                                tabIndex={isOpen ? undefined : -1}
-                                disabled={!selectedValue}
-                                onClick={() => setDateValue("")}
-                                className={cn(
-                                    "font-bold text-slate-gray transition-colors duration-150 hover:bg-cloud-white hover:text-midnight-slate focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35",
-                                    calendarClasses.footerButton
-                                )}
-                            >
-                                Clear
-                            </button>
-                            <button
-                                type="button"
-                                tabIndex={isOpen ? undefined : -1}
-                                disabled={!canSelectToday}
-                                onClick={() => selectDate(todayValue)}
-                                className={cn(
-                                    "font-bold text-luma-blue transition-colors duration-150 hover:bg-luma-blue/10 focus:outline-none focus:ring-2 focus:ring-luma-blue/25 disabled:cursor-not-allowed disabled:text-slate-gray/35",
-                                    calendarClasses.footerButton
-                                )}
-                            >
-                                Today
-                            </button>
-                        </div>
-                    </div>
-                ) : null}
+                {renderedCalendar}
             </div>
             {error ? (
                 <p id={errorId} className="mt-2 text-sm font-medium text-red-500">
