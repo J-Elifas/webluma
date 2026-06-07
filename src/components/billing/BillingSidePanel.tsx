@@ -6,7 +6,6 @@ import {
     CheckCircle2,
     ExternalLink,
     Settings,
-    TrendingUp,
     type LucideIcon,
 } from "lucide-react";
 

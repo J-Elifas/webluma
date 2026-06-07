@@ -1,5 +1,5 @@
 import type { ChangeEventHandler, FormEventHandler } from "react";
-import { CheckCircle2, CreditCard, ReceiptText } from "lucide-react";
+import { CheckCircle2, ReceiptText } from "lucide-react";
 import Button from "@/components/ui/Button";
 import DateInputField from "@/components/ui/DateInputField";
 import Modal from "@/components/ui/Modal";

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 interface DataTableProps {
     children: ReactNode;
@@ -65,16 +65,6 @@ export function TableSearch({ label, placeholder }: TableSearchProps) {
             <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span className="truncate">{placeholder}</span>
         </div>
-    );
-}
-
-export function TableFilterChip({ children, icon }: { children: string; icon?: ReactNode }) {
-    return (
-        <span className="inline-flex h-10 min-w-[8.5rem] flex-1 items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-semibold text-midnight-slate shadow-sm sm:flex-none">
-            {icon}
-            <span className="truncate">{children}</span>
-            <ChevronDown className="h-4 w-4 text-slate-gray" aria-hidden="true" />
-        </span>
     );
 }
 

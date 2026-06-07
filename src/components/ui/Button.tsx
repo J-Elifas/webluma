@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type ButtonVariant = "primary" | "dark" | "secondary" | "ghost" | "outline";
@@ -32,19 +32,23 @@ const sizeClasses: Record<ButtonSize, string> = {
     "icon-lg": "h-11 w-11 rounded-2xl p-0",
 };
 
-export default function Button({
-    children,
-    className,
-    isFullWidth = false,
-    leftIcon,
-    rightIcon,
-    size = "md",
-    type = "button",
-    variant = "primary",
-    ...props
-}: ButtonProps) {
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+    {
+        children,
+        className,
+        isFullWidth = false,
+        leftIcon,
+        rightIcon,
+        size = "md",
+        type = "button",
+        variant = "primary",
+        ...props
+    },
+    ref
+) {
     return (
         <button
+            ref={ref}
             type={type}
             className={cn(
                 "inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap font-bold transition-colors duration-200 disabled:cursor-not-allowed disabled:shadow-none",
@@ -60,4 +64,6 @@ export default function Button({
             {rightIcon}
         </button>
     );
-}
+});
+
+export default Button;

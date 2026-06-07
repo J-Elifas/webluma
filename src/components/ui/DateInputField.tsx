@@ -3,7 +3,7 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@/lib/utils";
+import { cn, formatDateValue } from "@/lib/utils";
 import FieldLabel from "./FieldLabel";
 import { fieldControlClasses } from "./field-styles";
 
@@ -114,14 +114,6 @@ function parseDateValue(value?: string) {
 
     const [, year, month, day] = match;
     return new Date(Number(year), Number(month) - 1, Number(day));
-}
-
-function formatDateValue(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
 }
 
 function formatDisplayDate(value: string) {
