@@ -35,8 +35,19 @@ const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
 });
 
+const dateFormatter = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric",
+});
+
 export function formatShortDate(date: Date) {
     return shortDateFormatter.format(date);
+}
+
+export function formatDate(date: Date) {
+    return dateFormatter.format(date);
 }
 
 export function formatDateValue(date: Date) {

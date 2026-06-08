@@ -135,7 +135,7 @@ export default function BillingInvoicesPanel({
                                     <div className="flex items-center gap-2">
                                         <Button
                                             type="button"
-                                            variant="outline"
+                                            variant="secondary"
                                             size="sm"
                                             aria-haspopup="dialog"
                                             aria-label={
@@ -147,7 +147,7 @@ export default function BillingInvoicesPanel({
                                             className={cn(
                                                 "h-9 min-w-20 rounded-xl px-2 text-xs font-semibold hover:ring-1 hover:ring-luma-blue/20 focus:ring-2 focus:ring-luma-blue/40",
                                                 isPaid &&
-                                                    "border-soft-mint/80 bg-soft-mint/45 text-teal-700 hover:bg-soft-mint/60"
+                                                "border-soft-mint/80 bg-soft-mint/45 text-teal-700 hover:bg-soft-mint/60"
                                             )}
                                         >
                                             {invoice.actionLabel}

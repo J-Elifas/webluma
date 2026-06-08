@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import BillingContent from "@/components/billing/BillingContent";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
+import type { BillingInvoiceInsights } from "@/server/billing/types";
 import type {
     BillingInvoiceFilters,
     BillingInvoiceRow,
@@ -15,6 +16,7 @@ import CreateInvoiceController from "../invoices/CreateInvoiceController";
 
 interface BillingPageControllerProps {
     invoiceClient: InvoiceClient[];
+    invoiceInsights: BillingInvoiceInsights;
     invoiceTableData: BillingInvoiceTableData;
     isGuest: boolean;
 }
@@ -90,6 +92,7 @@ function getFilteredInvoiceTableData(
 
 export default function BillingPageController({
     invoiceClient,
+    invoiceInsights,
     invoiceTableData,
     isGuest,
 }: BillingPageControllerProps) {
@@ -145,6 +148,7 @@ export default function BillingPageController({
                 filteredInvoiceTableData={filteredInvoiceTableData}
                 invoiceClients={invoiceClient}
                 invoiceFilters={invoiceFilters}
+                invoiceInsights={invoiceInsights}
                 invoiceSearchQuery={invoiceSearchQuery}
                 invoiceTableData={invoiceTableData}
                 isGuest={isGuest}

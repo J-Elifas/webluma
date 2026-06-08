@@ -8,6 +8,7 @@ import {
     Settings,
     type LucideIcon,
 } from "lucide-react";
+import type { BillingInvoiceInsights } from "@/server/billing/types";
 
 type BillingInsightTone = "blue" | "mint" | "rose";
 
@@ -15,6 +16,10 @@ interface BillingInsightItemProps {
     children: ReactNode;
     icon: LucideIcon;
     tone: BillingInsightTone;
+}
+
+interface BillingSidePanelProps {
+    invoiceInsights: BillingInvoiceInsights;
 }
 
 const insightToneClasses: Record<BillingInsightTone, string> = {
@@ -36,7 +41,41 @@ function BillingInsightItem({ children, icon: Icon, tone }: BillingInsightItemPr
     );
 }
 
-export default function BillingSidePanel() {
+function getDueThisWeekTitle(count: number) {
+    if (count === 0) {
+        return "No invoices due this week";
+    }
+
+    return `${count} invoice${count === 1 ? "" : "s"} due this week`;
+}
+
+function getOverdueTitle(count: number) {
+    if (count === 0) {
+        return "No overdue invoices require follow-up";
+    }
+
+    return `${count} overdue invoice${count === 1 ? "" : "s"} ${
+        count === 1 ? "requires" : "require"
+    } follow-up`;
+}
+
+function getDueThisWeekHelper({ amount, count, dueByDate }: BillingInvoiceInsights["dueThisWeek"]) {
+    if (count === 0) {
+        return "No pending invoices are due in the next 7 days.";
+    }
+
+    return `${amount} is due by ${dueByDate}`;
+}
+
+function getOverdueHelper({ amount, count, daysOverdue }: BillingInvoiceInsights["overdue"]) {
+    if (count === 0) {
+        return "No pending invoices are past due.";
+    }
+
+    return `${amount} is overdue by ${daysOverdue} day${daysOverdue === 1 ? "" : "s"}`;
+}
+
+export default function BillingSidePanel({ invoiceInsights }: BillingSidePanelProps) {
     return (
         <aside className="space-y-4">
             <article className="rounded-[1.25rem] border border-mist-gray/70 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
@@ -47,19 +86,19 @@ export default function BillingSidePanel() {
                 <div className="mt-5 space-y-5">
                     <BillingInsightItem icon={CalendarDays} tone="blue">
                         <p className="text-sm font-bold text-midnight-slate">
-                            2 invoices due this week
+                            {getDueThisWeekTitle(invoiceInsights.dueThisWeek.count)}
                         </p>
                         <p className="mt-1 text-sm font-medium leading-6 text-slate-gray">
-                            $548.00 is due by Jun 7, 2026
+                            {getDueThisWeekHelper(invoiceInsights.dueThisWeek)}
                         </p>
                     </BillingInsightItem>
 
                     <BillingInsightItem icon={AlertTriangle} tone="rose">
                         <p className="text-sm font-bold text-midnight-slate">
-                            1 overdue invoice requires follow-up
+                            {getOverdueTitle(invoiceInsights.overdue.count)}
                         </p>
                         <p className="mt-1 text-sm font-medium leading-6 text-slate-gray">
-                            $149.00 is overdue by 2 days
+                            {getOverdueHelper(invoiceInsights.overdue)}
                         </p>
                     </BillingInsightItem>
                 </div>

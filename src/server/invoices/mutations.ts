@@ -1,5 +1,5 @@
 import { InvoiceStatus } from "@prisma/client";
-import { formatDateValue, toUtcDate, toUtcDateValue } from "@/lib/utils";
+import { formatDate, formatDateValue, toUtcDate, toUtcDateValue } from "@/lib/utils";
 import { prisma } from "@/server/db/prisma";
 import type {
     CreateInvoiceInput,
@@ -61,8 +61,8 @@ export async function createInvoice(
     });
 
     if (overlappingInvoice) {
-        const existingStart = toUtcDateValue(overlappingInvoice.periodStart);
-        const existingEnd = toUtcDateValue(overlappingInvoice.periodEnd);
+        const existingStart = formatDate(overlappingInvoice.periodStart);
+        const existingEnd = formatDate(overlappingInvoice.periodEnd);
 
         return {
             message: `This client already has an active invoice (${overlappingInvoice.invoiceNumber}) for ${existingStart} to ${existingEnd}. Start the next invoice after ${existingEnd}.`,

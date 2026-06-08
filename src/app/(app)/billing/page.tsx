@@ -12,6 +12,7 @@ export default async function BillingPage() {
     return (
         <BillingPageController
             invoiceClient={invoiceClient}
+            invoiceInsights={billingData.invoiceInsights}
             invoiceTableData={invoiceTableData}
             isGuest={billingData.isGuest}
         />

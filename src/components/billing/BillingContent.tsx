@@ -3,6 +3,7 @@
 import { FileText } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
+import type { BillingInvoiceInsights } from "@/server/billing/types";
 import type {
     BillingInvoiceFilters,
     BillingInvoiceRow,
@@ -15,6 +16,7 @@ import BillingSidePanel from "./BillingSidePanel";
 
 interface BillingContentProps {
     filteredInvoiceTableData: BillingInvoiceTableData;
+    invoiceInsights: BillingInvoiceInsights;
     invoiceClients: InvoiceClient[];
     invoiceFilters: BillingInvoiceFilters;
     invoiceSearchQuery: string;
@@ -30,6 +32,7 @@ export default function BillingContent({
     filteredInvoiceTableData,
     invoiceClients,
     invoiceFilters,
+    invoiceInsights,
     invoiceSearchQuery,
     invoiceTableData,
     isGuest,
@@ -69,7 +72,7 @@ export default function BillingContent({
                     onInvoiceSearchQueryChange={onInvoiceSearchQueryChange}
                     onInvoiceAction={onInvoiceAction}
                 />
-                <BillingSidePanel />
+                <BillingSidePanel invoiceInsights={invoiceInsights} />
             </section>
         </>
     );
