@@ -1,3 +1,10 @@
+export const billingReminderDaysBeforeOptions = [1, 3, 7];
+
+export interface BillingReminderPreferences {
+    remindersEnabled: boolean;
+    reminderDaysBefore: number;
+}
+
 export interface BillingInvoiceDueInsight {
     amount: string;
     count: number;

@@ -3,7 +3,7 @@
 import { FileText } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
-import type { BillingInvoiceInsights } from "@/server/billing/types";
+import type { BillingInvoiceInsights, BillingReminderPreferences } from "@/server/billing/types";
 import type {
     BillingInvoiceFilters,
     BillingInvoiceRow,
@@ -22,10 +22,13 @@ interface BillingContentProps {
     invoiceSearchQuery: string;
     invoiceTableData: BillingInvoiceTableData;
     isGuest: boolean;
+    nextPaymentReminder: Pick<BillingInvoiceRow, "clientName" | "dueDate" | "invoiceNumber"> | null;
+    reminderPreferences: BillingReminderPreferences;
     onCreateInvoice: () => void;
     onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
     onInvoiceSearchQueryChange: (query: string) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
+    onManageReminders: () => void;
 }
 
 export default function BillingContent({
@@ -36,10 +39,13 @@ export default function BillingContent({
     invoiceSearchQuery,
     invoiceTableData,
     isGuest,
+    nextPaymentReminder,
     onCreateInvoice,
     onInvoiceAction,
     onInvoiceFiltersChange,
     onInvoiceSearchQueryChange,
+    onManageReminders,
+    reminderPreferences,
 }: BillingContentProps) {
     return (
         <>
@@ -72,7 +78,12 @@ export default function BillingContent({
                     onInvoiceSearchQueryChange={onInvoiceSearchQueryChange}
                     onInvoiceAction={onInvoiceAction}
                 />
-                <BillingSidePanel invoiceInsights={invoiceInsights} />
+                <BillingSidePanel
+                    invoiceInsights={invoiceInsights}
+                    nextPaymentReminder={nextPaymentReminder}
+                    reminderPreferences={reminderPreferences}
+                    onManageReminders={onManageReminders}
+                />
             </section>
         </>
     );

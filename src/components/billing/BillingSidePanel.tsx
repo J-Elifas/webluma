@@ -1,14 +1,8 @@
 import type { ReactNode } from "react";
-import {
-    AlertTriangle,
-    Bell,
-    CalendarDays,
-    CheckCircle2,
-    ExternalLink,
-    Settings,
-    type LucideIcon,
-} from "lucide-react";
-import type { BillingInvoiceInsights } from "@/server/billing/types";
+import { AlertTriangle, CalendarDays, ExternalLink, type LucideIcon } from "lucide-react";
+import type { BillingInvoiceInsights, BillingReminderPreferences } from "@/server/billing/types";
+import type { BillingInvoiceRow } from "@/server/invoices/types";
+import PaymentRemindersCard from "./PaymentRemindersCard";
 
 type BillingInsightTone = "blue" | "mint" | "rose";
 
@@ -20,6 +14,9 @@ interface BillingInsightItemProps {
 
 interface BillingSidePanelProps {
     invoiceInsights: BillingInvoiceInsights;
+    nextPaymentReminder: Pick<BillingInvoiceRow, "clientName" | "dueDate" | "invoiceNumber"> | null;
+    reminderPreferences: BillingReminderPreferences;
+    onManageReminders: () => void;
 }
 
 const insightToneClasses: Record<BillingInsightTone, string> = {
@@ -75,7 +72,12 @@ function getOverdueHelper({ amount, count, daysOverdue }: BillingInvoiceInsights
     return `${amount} is overdue by ${daysOverdue} day${daysOverdue === 1 ? "" : "s"}`;
 }
 
-export default function BillingSidePanel({ invoiceInsights }: BillingSidePanelProps) {
+export default function BillingSidePanel({
+    invoiceInsights,
+    nextPaymentReminder,
+    onManageReminders,
+    reminderPreferences,
+}: BillingSidePanelProps) {
     return (
         <aside className="space-y-4">
             <article className="rounded-[1.25rem] border border-mist-gray/70 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
@@ -109,33 +111,11 @@ export default function BillingSidePanel({ invoiceInsights }: BillingSidePanelPr
                 </span>
             </article>
 
-            <article className="rounded-[1.25rem] border border-mist-gray/70 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
-                <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-lg font-black text-midnight-slate">Payment reminders</h2>
-                    <Bell className="h-5 w-5 text-midnight-slate" aria-hidden="true" />
-                </div>
-
-                <div className="mt-5 flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-teal-600" aria-hidden="true" />
-                    <p className="text-sm font-bold text-teal-700">Automatic reminders are on</p>
-                </div>
-
-                <p className="mt-4 text-sm font-semibold leading-6 text-slate-gray">
-                    We will send reminders 3 days before due date.
-                </p>
-
-                <div className="mt-5 rounded-2xl border border-luma-blue/20 bg-luma-blue/10 p-4">
-                    <p className="text-xs font-bold uppercase text-luma-blue">Next reminder</p>
-                    <p className="mt-2 text-sm font-bold text-midnight-slate">
-                        Nova Creative - Jun 1, 2026
-                    </p>
-                </div>
-
-                <span className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-semibold text-midnight-slate shadow-sm">
-                    <Settings className="h-4 w-4 text-slate-gray" aria-hidden="true" />
-                    Manage reminders
-                </span>
-            </article>
+            <PaymentRemindersCard
+                nextPaymentReminder={nextPaymentReminder}
+                preferences={reminderPreferences}
+                onManageReminders={onManageReminders}
+            />
         </aside>
     );
 }

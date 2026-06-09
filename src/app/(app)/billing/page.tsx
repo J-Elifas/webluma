@@ -15,6 +15,7 @@ export default async function BillingPage() {
             invoiceInsights={billingData.invoiceInsights}
             invoiceTableData={invoiceTableData}
             isGuest={billingData.isGuest}
+            reminderPreferences={billingData.reminderPreferences}
         />
     );
 }

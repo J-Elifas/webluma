@@ -10,9 +10,17 @@ import {
     toUtcDateValue,
 } from "@/lib/utils";
 import { prisma } from "@/server/db/prisma";
-import type { BillingInvoiceInsights } from "./types";
+import {
+    billingReminderDaysBeforeOptions,
+    type BillingInvoiceInsights,
+    type BillingReminderPreferences,
+} from "./types";
 
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
+const defaultBillingReminderPreferences: BillingReminderPreferences = {
+    remindersEnabled: true,
+    reminderDaysBefore: 3,
+};
 
 function getEmptyBillingInvoiceInsights(): BillingInvoiceInsights {
     return {
@@ -102,6 +110,27 @@ async function getBillingInvoiceInsights(userId: string): Promise<BillingInvoice
     };
 }
 
+async function getBillingReminderPreferences(userId: string): Promise<BillingReminderPreferences> {
+    const preferences = await prisma.user.findUnique({
+        where: {
+            id: userId,
+        },
+        select: {
+            remindersEnabled: true,
+            reminderDaysBefore: true,
+        },
+    });
+
+    if (
+        !preferences ||
+        !billingReminderDaysBeforeOptions.includes(preferences.reminderDaysBefore)
+    ) {
+        return defaultBillingReminderPreferences;
+    }
+
+    return preferences;
+}
+
 export async function getBillingData() {
     const session = await getServerSession(authOptions);
     const isGuest = !session || session.user.role === "GUEST";
@@ -109,12 +138,19 @@ export async function getBillingData() {
     if (isGuest) {
         return {
             invoiceInsights: getEmptyBillingInvoiceInsights(),
+            reminderPreferences: defaultBillingReminderPreferences,
             isGuest,
         };
     }
 
+    const [invoiceInsights, reminderPreferences] = await Promise.all([
+        getBillingInvoiceInsights(session.user.id),
+        getBillingReminderPreferences(session.user.id),
+    ]);
+
     return {
-        invoiceInsights: await getBillingInvoiceInsights(session.user.id),
+        invoiceInsights,
+        reminderPreferences,
         isGuest,
     };
 }
