@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import BillingContent from "@/components/billing/BillingContent";
 import ReminderSettingsModal from "@/components/billing/ReminderSettingsModal";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
+import StatusAlert from "@/components/ui/StatusAlert";
+import useStatusAlert from "@/hooks/useStatusAlert";
 import { addDaysToDateValue, formatDateValue } from "@/lib/utils";
 import type { BillingInvoiceInsights, BillingReminderPreferences } from "@/server/billing/types";
 import type {
@@ -24,19 +25,13 @@ interface BillingPageControllerProps {
     reminderPreferences: BillingReminderPreferences;
 }
 
-interface BillingInvoiceAlert {
-    id: number;
-    tone: StatusAlertTone;
-    title: string;
-    message: string;
-}
-
 const defaultBillingInvoiceFilters: BillingInvoiceFilters = {
     status: "all",
     clientId: "all",
     dueDateStart: "",
     dueDateEnd: "",
 };
+const billingInvoicePageSize = 5;
 
 function getNextPaymentReminder(
     invoices: BillingInvoiceRow[],
@@ -77,17 +72,18 @@ function getNextPaymentReminder(
 
     return nextInvoice
         ? {
-            clientName: nextInvoice.clientName,
-            dueDate: nextInvoice.dueDate,
-            invoiceNumber: nextInvoice.invoiceNumber,
-        }
+              clientName: nextInvoice.clientName,
+              dueDate: nextInvoice.dueDate,
+              invoiceNumber: nextInvoice.invoiceNumber,
+          }
         : null;
 }
 
 function getFilteredInvoiceTableData(
     tableData: BillingInvoiceTableData,
     filters: BillingInvoiceFilters,
-    searchQuery: string
+    searchQuery: string,
+    currentPage: number
 ): BillingInvoiceTableData {
     const searchTerms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
     const filteredInvoices = tableData.invoices.filter((invoice) => {
@@ -129,13 +125,17 @@ function getFilteredInvoiceTableData(
 
         return true;
     });
+    const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / billingInvoicePageSize));
+    const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+    const pageStartIndex = (safeCurrentPage - 1) * billingInvoicePageSize;
 
     return {
         ...tableData,
-        invoices: filteredInvoices,
-        currentPage: 1,
+        invoices: filteredInvoices.slice(pageStartIndex, pageStartIndex + billingInvoicePageSize),
+        currentPage: safeCurrentPage,
+        pageSize: billingInvoicePageSize,
         totalInvoices: filteredInvoices.length,
-        totalPages: Math.max(1, Math.ceil(filteredInvoices.length / tableData.pageSize)),
+        totalPages,
     };
 }
 
@@ -151,15 +151,22 @@ export default function BillingPageController({
     const [isReminderSettingsOpen, setIsReminderSettingsOpen] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState<BillingInvoiceRow | null>(null);
     const [invoiceFilters, setInvoiceFilters] = useState(defaultBillingInvoiceFilters);
+    const [invoiceCurrentPage, setInvoiceCurrentPage] = useState(1);
     const [invoiceSearchQuery, setInvoiceSearchQuery] = useState("");
     const [savedReminderPreferences, setSavedReminderPreferences] = useState(reminderPreferences);
     const [draftReminderPreferences, setDraftReminderPreferences] = useState(reminderPreferences);
     const [isLoading, setIsLoading] = useState(false);
     const [isSavingReminderSettings, setIsSavingReminderSettings] = useState(false);
-    const [alert, setAlert] = useState<BillingInvoiceAlert | null>(null);
+    const { alert, setAlert, showStatusAlert } = useStatusAlert();
     const filteredInvoiceTableData = useMemo(
-        () => getFilteredInvoiceTableData(invoiceTableData, invoiceFilters, invoiceSearchQuery),
-        [invoiceFilters, invoiceSearchQuery, invoiceTableData]
+        () =>
+            getFilteredInvoiceTableData(
+                invoiceTableData,
+                invoiceFilters,
+                invoiceSearchQuery,
+                invoiceCurrentPage
+            ),
+        [invoiceCurrentPage, invoiceFilters, invoiceSearchQuery, invoiceTableData]
     );
     const nextPaymentReminder = useMemo(
         () => getNextPaymentReminder(invoiceTableData.invoices, savedReminderPreferences),
@@ -167,20 +174,6 @@ export default function BillingPageController({
     );
     const isSaving = isLoading || isSavingReminderSettings;
     const loadingLabel = isSavingReminderSettings ? "Saving reminder settings" : "Saving invoice";
-
-    useEffect(() => {
-        if (!alert) {
-            return;
-        }
-
-        const timeoutId = window.setTimeout(() => {
-            setAlert(null);
-        }, 6000);
-
-        return () => {
-            window.clearTimeout(timeoutId);
-        };
-    }, [alert]);
 
     function handleCreateInvoiceSelect() {
         setIsCreateInvoiceOpen(true);
@@ -191,15 +184,22 @@ export default function BillingPageController({
         setIsMarkPaidOpen(true);
     }
 
-    function handleMarkInvoicePaidAfterClose() {
-        setSelectedInvoice(null);
+    function handleInvoiceFiltersChange(filters: BillingInvoiceFilters) {
+        setInvoiceFilters(filters);
+        setInvoiceCurrentPage(1);
     }
 
-    function handleStatusAlert(nextAlert: Omit<BillingInvoiceAlert, "id">) {
-        setAlert({
-            ...nextAlert,
-            id: Date.now(),
-        });
+    function handleInvoiceSearchQueryChange(query: string) {
+        setInvoiceSearchQuery(query);
+        setInvoiceCurrentPage(1);
+    }
+
+    function handleInvoicePageChange(page: number) {
+        setInvoiceCurrentPage(Math.min(Math.max(1, page), filteredInvoiceTableData.totalPages));
+    }
+
+    function handleMarkInvoicePaidAfterClose() {
+        setSelectedInvoice(null);
     }
 
     function handleReminderSettingsOpen() {
@@ -249,7 +249,7 @@ export default function BillingPageController({
         event.preventDefault();
 
         if (isGuest) {
-            handleStatusAlert({
+            showStatusAlert({
                 tone: "error",
                 title: "Settings not saved",
                 message: "Unable to save reminder settings. Please try again.",
@@ -270,7 +270,7 @@ export default function BillingPageController({
             const result = await readReminderResponse(response);
 
             if (!response.ok || !result.ok) {
-                handleStatusAlert({
+                showStatusAlert({
                     tone: "error",
                     title: "Settings not saved",
                     message:
@@ -283,14 +283,14 @@ export default function BillingPageController({
 
             setSavedReminderPreferences(nextReminderPreferences);
             setDraftReminderPreferences(nextReminderPreferences);
-            handleStatusAlert({
+            showStatusAlert({
                 tone: "success",
                 title: "Reminder settings saved",
                 message: result.message || "Reminder settings saved.",
             });
             setIsReminderSettingsOpen(false);
         } catch {
-            handleStatusAlert({
+            showStatusAlert({
                 tone: "error",
                 title: "Settings not saved",
                 message: "Unable to save reminder settings. Please try again.",
@@ -314,8 +314,9 @@ export default function BillingPageController({
                 reminderPreferences={savedReminderPreferences}
                 onCreateInvoice={handleCreateInvoiceSelect}
                 onInvoiceAction={handleInvoiceActionSelect}
-                onInvoiceFiltersChange={setInvoiceFilters}
-                onInvoiceSearchQueryChange={setInvoiceSearchQuery}
+                onInvoiceFiltersChange={handleInvoiceFiltersChange}
+                onInvoicePageChange={handleInvoicePageChange}
+                onInvoiceSearchQueryChange={handleInvoiceSearchQueryChange}
                 onManageReminders={handleReminderSettingsOpen}
             />
 
@@ -334,7 +335,7 @@ export default function BillingPageController({
                 isOpen={isCreateInvoiceOpen}
                 onClose={() => setIsCreateInvoiceOpen(false)}
                 onPendingChange={setIsLoading}
-                onStatusChange={handleStatusAlert}
+                onStatusChange={showStatusAlert}
             />
 
             <MarkInvoicePaidController
@@ -344,7 +345,7 @@ export default function BillingPageController({
                 onClose={() => setIsMarkPaidOpen(false)}
                 onAfterClose={handleMarkInvoicePaidAfterClose}
                 onPendingChange={setIsLoading}
-                onStatusChange={handleStatusAlert}
+                onStatusChange={showStatusAlert}
             />
 
             <ReminderSettingsModal

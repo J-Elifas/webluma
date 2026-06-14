@@ -1,6 +1,3 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/server/auth/options";
 import {
     addDaysToDateValue,
     getOptionalStringField,
@@ -8,6 +5,7 @@ import {
     isRecord,
     isValidDateValue,
 } from "@/lib/utils";
+import { handleAuthenticatedJsonRequest } from "@/server/api/authenticated-json-handler";
 import { createInvoice, markInvoicePaid } from "@/server/invoices/mutations";
 import type { CreateInvoiceInput, MarkInvoicePaidInput } from "@/server/invoices/types";
 
@@ -71,59 +69,17 @@ function parseMarkInvoicePaidInput(body: unknown): MarkInvoicePaidInput | null {
 }
 
 export async function POST(request: Request) {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role === "GUEST") {
-        return NextResponse.json({ message: "You are not authenticate!" }, { status: 401 });
-    }
-
-    let body: unknown;
-    try {
-        body = await request.json();
-    } catch {
-        return NextResponse.json({ message: "Unknown data!" }, { status: 400 });
-    }
-
-    const input = parseCreateInvoiceInput(body);
-    if (!input) {
-        return NextResponse.json({ message: "Input required!" }, { status: 400 });
-    }
-
-    const result = await createInvoice(input, session.user.id);
-    if (!result.ok) {
-        return NextResponse.json(
-            { message: result.message || "Something went wrong!" },
-            { status: 400 }
-        );
-    }
-
-    return NextResponse.json(result);
+    return handleAuthenticatedJsonRequest({
+        request,
+        parseInput: parseCreateInvoiceInput,
+        mutate: createInvoice,
+    });
 }
 
 export async function PATCH(request: Request) {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role === "GUEST") {
-        return NextResponse.json({ message: "You are not authenticate!" }, { status: 401 });
-    }
-
-    let body: unknown;
-    try {
-        body = await request.json();
-    } catch {
-        return NextResponse.json({ message: "Unknown data!" }, { status: 400 });
-    }
-
-    const input = parseMarkInvoicePaidInput(body);
-    if (!input) {
-        return NextResponse.json({ message: "Input required!" }, { status: 400 });
-    }
-
-    const result = await markInvoicePaid(input, session.user.id);
-    if (!result.ok) {
-        return NextResponse.json(
-            { message: result.message || "Something went wrong!" },
-            { status: 400 }
-        );
-    }
-
-    return NextResponse.json(result);
+    return handleAuthenticatedJsonRequest({
+        request,
+        parseInput: parseMarkInvoicePaidInput,
+        mutate: markInvoicePaid,
+    });
 }

@@ -3,6 +3,7 @@
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import useOutsidePointerDown from "@/hooks/useOutsidePointerDown";
 import { cn, formatDateValue } from "@/lib/utils";
 import FieldLabel from "./FieldLabel";
 import { fieldControlClasses } from "./field-styles";
@@ -323,30 +324,7 @@ export default function DateInputField({
         };
     }, [isOpen, shouldCenterCalendar]);
 
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        function handlePointerDown(event: PointerEvent) {
-            const target = event.target;
-
-            if (
-                target instanceof Node &&
-                (wrapperRef.current?.contains(target) || calendarRef.current?.contains(target))
-            ) {
-                return;
-            }
-
-            setIsOpen(false);
-        }
-
-        document.addEventListener("pointerdown", handlePointerDown);
-
-        return () => {
-            document.removeEventListener("pointerdown", handlePointerDown);
-        };
-    }, [isOpen]);
+    useOutsidePointerDown(isOpen, [wrapperRef, calendarRef], () => setIsOpen(false));
 
     function openCalendar() {
         if (disabled) {

@@ -51,9 +51,8 @@ function getOverdueTitle(count: number) {
         return "No overdue invoices require follow-up";
     }
 
-    return `${count} overdue invoice${count === 1 ? "" : "s"} ${
-        count === 1 ? "requires" : "require"
-    } follow-up`;
+    return `${count} overdue invoice${count === 1 ? "" : "s"} ${count === 1 ? "requires" : "require"
+        } follow-up`;
 }
 
 function getDueThisWeekHelper({ amount, count, dueByDate }: BillingInvoiceInsights["dueThisWeek"]) {
@@ -105,10 +104,10 @@ export default function BillingSidePanel({
                     </BillingInsightItem>
                 </div>
 
-                <span className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-bold text-midnight-slate shadow-sm">
+                {/* <span className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-bold text-midnight-slate shadow-sm">
                     View all reports
                     <ExternalLink className="h-4 w-4 text-slate-gray" aria-hidden="true" />
-                </span>
+                </span> */}
             </article>
 
             <PaymentRemindersCard

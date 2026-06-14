@@ -24,6 +24,7 @@ interface BillingInvoicesPanelProps {
     invoiceSearchQuery: string;
     tableData: BillingInvoiceTableData;
     onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
+    onInvoicePageChange: (page: number) => void;
     onInvoiceSearchQueryChange: (query: string) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
 }
@@ -53,10 +54,12 @@ export default function BillingInvoicesPanel({
     invoiceSearchQuery,
     onInvoiceAction,
     onInvoiceFiltersChange,
+    onInvoicePageChange,
     onInvoiceSearchQueryChange,
     tableData,
 }: BillingInvoicesPanelProps) {
     const { currentPage, invoices, pageSize, totalInvoices, totalPages } = tableData;
+    const rowNumberOffset = (currentPage - 1) * pageSize;
 
     return (
         <DataTable
@@ -90,11 +93,13 @@ export default function BillingInvoicesPanel({
                     renderedItemCount={invoices.length}
                     totalItems={totalInvoices}
                     totalPages={totalPages}
+                    onPageChange={onInvoicePageChange}
                 />
             }
         >
             <thead>
                 <tr className="bg-cloud-white/80 text-xs font-bold uppercase text-slate-gray">
+                    <th className="w-16 px-4 py-3">No</th>
                     <th className="px-4 py-3">Invoice</th>
                     <th className="px-4 py-3">Client</th>
                     <th className="px-4 py-3">Billing period</th>
@@ -106,11 +111,14 @@ export default function BillingInvoicesPanel({
             </thead>
             <tbody className="divide-y divide-mist-gray/60">
                 {invoices.length > 0 ? (
-                    invoices.map((invoice) => {
+                    invoices.map((invoice, index) => {
                         const isPaid = invoice.status === "paid";
 
                         return (
                             <tr key={invoice.id}>
+                                <td className="whitespace-nowrap px-4 py-4 text-sm font-bold text-slate-gray">
+                                    {rowNumberOffset + index + 1}
+                                </td>
                                 <td className="whitespace-nowrap px-4 py-4 text-sm font-bold text-midnight-slate">
                                     {invoice.invoiceNumber}
                                 </td>
@@ -147,7 +155,7 @@ export default function BillingInvoicesPanel({
                                             className={cn(
                                                 "h-9 min-w-20 rounded-xl px-2 text-xs font-semibold hover:ring-1 hover:ring-luma-blue/20 focus:ring-2 focus:ring-luma-blue/40",
                                                 isPaid &&
-                                                "border-soft-mint/80 bg-soft-mint/45 text-teal-700 hover:bg-soft-mint/60"
+                                                    "border-soft-mint/80 bg-soft-mint/45 text-teal-700 hover:bg-soft-mint/60"
                                             )}
                                         >
                                             {invoice.actionLabel}
@@ -164,7 +172,7 @@ export default function BillingInvoicesPanel({
                 ) : (
                     <tr>
                         <td
-                            colSpan={7}
+                            colSpan={8}
                             className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-gray"
                         >
                             No invoices found.

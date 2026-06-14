@@ -1,7 +1,8 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import useOutsidePointerDown from "@/hooks/useOutsidePointerDown";
 import { cn } from "@/lib/utils";
 import FieldLabel from "./FieldLabel";
 import { fieldControlClasses } from "./field-styles";
@@ -88,27 +89,7 @@ export default function SelectField({
     const [isOpen, setIsOpen] = useState(false);
     const [isListboxRendered, setIsListboxRendered] = useState(false);
 
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        function handlePointerDown(event: PointerEvent) {
-            const target = event.target;
-
-            if (target instanceof Node && wrapperRef.current?.contains(target)) {
-                return;
-            }
-
-            setIsOpen(false);
-        }
-
-        document.addEventListener("pointerdown", handlePointerDown);
-
-        return () => {
-            document.removeEventListener("pointerdown", handlePointerDown);
-        };
-    }, [isOpen]);
+    useOutsidePointerDown(isOpen, [wrapperRef], () => setIsOpen(false));
 
     function openListbox() {
         if (disabled) {

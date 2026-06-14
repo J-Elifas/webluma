@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import Button from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps {
     children: ReactNode;
@@ -17,6 +19,7 @@ interface TableSearchProps {
 interface TablePaginationProps {
     currentPage: number;
     itemLabel: string;
+    onPageChange?: (page: number) => void;
     pageSize: number;
     renderedItemCount: number;
     totalItems: number;
@@ -79,6 +82,7 @@ export function TableSearch({ label, onValueChange, placeholder, value }: TableS
 export function TablePagination({
     currentPage,
     itemLabel,
+    onPageChange,
     pageSize,
     renderedItemCount,
     totalItems,
@@ -87,16 +91,34 @@ export function TablePagination({
     const startItem = totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
     const endItem = totalItems > 0 ? startItem + renderedItemCount - 1 : 0;
     const pageItems = getPaginationItems(currentPage, totalPages);
+    const canGoPrevious = currentPage > 1;
+    const canGoNext = currentPage < totalPages;
+
+    function handlePageChange(page: number) {
+        if (!onPageChange || page < 1 || page > totalPages || page === currentPage) {
+            return;
+        }
+
+        onPageChange(page);
+    }
 
     return (
         <div className="flex flex-col gap-3 border-t border-mist-gray/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm font-semibold text-slate-gray">
                 Showing {startItem} to {endItem} of {totalItems} {itemLabel}
             </p>
-            <div className="flex items-center gap-2" aria-label="Pagination preview">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-mist-gray/70 bg-white text-midnight-slate shadow-sm">
+            <nav className="flex items-center gap-2" aria-label="Pagination">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Go to previous page"
+                    disabled={!onPageChange || !canGoPrevious}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-mist-gray/70 bg-white text-midnight-slate shadow-sm transition-colors hover:border-luma-blue/60 hover:bg-white hover:text-luma-blue disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-sm"
+                >
                     <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                </span>
+                </Button>
                 {pageItems.map((item, index) =>
                     item === "ellipsis" ? (
                         <span
@@ -106,22 +128,41 @@ export function TablePagination({
                             ...
                         </span>
                     ) : (
-                        <span
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             key={item}
-                            className={
+                            aria-label={`Go to page ${item}`}
+                            aria-current={item === currentPage ? "page" : undefined}
+                            disabled={!onPageChange || item === currentPage}
+                            onClick={() => handlePageChange(item)}
+                            className={cn(
+                                "inline-flex h-9 w-9 items-center justify-center rounded-xl text-sm font-semibold transition-colors disabled:cursor-default",
                                 item === currentPage
-                                    ? "inline-flex h-9 w-9 items-center justify-center rounded-xl bg-luma-blue text-sm font-semibold text-white shadow-[0_14px_24px_-18px_rgba(56,189,248,0.9)]"
-                                    : "inline-flex h-9 w-9 items-center justify-center rounded-xl border border-mist-gray/70 bg-white text-sm font-semibold text-midnight-slate shadow-sm"
-                            }
+                                    ? "bg-luma-blue text-white shadow-[0_14px_24px_-18px_rgba(56,189,248,0.9)] hover:bg-luma-blue disabled:text-white disabled:opacity-100 disabled:shadow-[0_14px_24px_-18px_rgba(56,189,248,0.9)]"
+                                    : "border border-mist-gray/70 bg-white text-midnight-slate shadow-sm hover:border-luma-blue/60 hover:bg-white hover:text-luma-blue disabled:shadow-sm",
+                                !onPageChange &&
+                                    item !== currentPage &&
+                                    "opacity-50 disabled:opacity-50"
+                            )}
                         >
                             {item}
-                        </span>
+                        </Button>
                     )
                 )}
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-mist-gray/70 bg-white text-midnight-slate shadow-sm">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Go to next page"
+                    disabled={!onPageChange || !canGoNext}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-mist-gray/70 bg-white text-midnight-slate shadow-sm transition-colors hover:border-luma-blue/60 hover:bg-white hover:text-luma-blue disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-sm"
+                >
                     <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                </span>
-            </div>
+                </Button>
+            </nav>
         </div>
     );
 }

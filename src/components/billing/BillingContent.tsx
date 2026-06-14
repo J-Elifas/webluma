@@ -26,6 +26,7 @@ interface BillingContentProps {
     reminderPreferences: BillingReminderPreferences;
     onCreateInvoice: () => void;
     onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
+    onInvoicePageChange: (page: number) => void;
     onInvoiceSearchQueryChange: (query: string) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
     onManageReminders: () => void;
@@ -43,6 +44,7 @@ export default function BillingContent({
     onCreateInvoice,
     onInvoiceAction,
     onInvoiceFiltersChange,
+    onInvoicePageChange,
     onInvoiceSearchQueryChange,
     onManageReminders,
     reminderPreferences,
@@ -75,6 +77,7 @@ export default function BillingContent({
                     invoiceSearchQuery={invoiceSearchQuery}
                     tableData={filteredInvoiceTableData}
                     onInvoiceFiltersChange={onInvoiceFiltersChange}
+                    onInvoicePageChange={onInvoicePageChange}
                     onInvoiceSearchQueryChange={onInvoiceSearchQueryChange}
                     onInvoiceAction={onInvoiceAction}
                 />

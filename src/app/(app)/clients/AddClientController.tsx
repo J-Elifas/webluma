@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AddClientForm from "@/components/clients/AddClientForm";
 import Modal from "@/components/ui/Modal";
 import type { StatusAlertTone } from "@/components/ui/StatusAlert";
+import usePendingState from "@/hooks/usePendingState";
 import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
 import { isValidDateValue, isValidHttpUrl } from "@/lib/utils";
 import { clientPlans } from "@/server/clients/options";
@@ -157,12 +158,7 @@ export default function AddClientController({
     const router = useRouter();
     const [formValues, setFormValues] = useState<AddClientFormValues>(initialFormValues);
     const [errors, setErrors] = useState<AddClientFormErrors>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    function setPendingState(isPending: boolean) {
-        setIsSubmitting(isPending);
-        onPendingChange?.(isPending);
-    }
+    const { isSubmitting, setPendingState } = usePendingState(onPendingChange);
 
     function setSubmitError(message: string) {
         onStatusChange?.({

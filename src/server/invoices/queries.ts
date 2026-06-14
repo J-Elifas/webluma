@@ -11,7 +11,7 @@ import type {
     InvoiceStatusTone,
 } from "./types";
 
-const defaultInvoicePageSize = 8;
+const maxInvoicePageSize = 5;
 const statusLabels: Record<InvoiceStatus, string> = {
     [InvoiceStatus.overdue]: "Overdue",
     [InvoiceStatus.paid]: "Paid",
@@ -156,17 +156,16 @@ export async function getInvoiceClient(): Promise<InvoiceClient[]> {
 
 export async function getBillingInvoiceTableData(
     currentPage = 1,
-    pageSize = defaultInvoicePageSize
+    pageSize = maxInvoicePageSize
 ): Promise<BillingInvoiceTableData> {
     const userId = await getInvoiceUserId();
-    const safePageSize = Math.max(1, pageSize);
-    const safeCurrentPage = Math.max(1, currentPage);
+    const safePageSize = Math.min(maxInvoicePageSize, Math.max(1, pageSize));
 
     if (!userId) {
         return {
             invoices: [],
             totalInvoices: 0,
-            currentPage: safeCurrentPage,
+            currentPage: 1,
             pageSize: safePageSize,
             totalPages: 1,
         };
@@ -177,35 +176,31 @@ export async function getBillingInvoiceTableData(
             userId,
         },
     };
-    const [totalInvoices, invoiceRecords] = await Promise.all([
-        prisma.invoice.count({
-            where,
-        }),
-        prisma.invoice.findMany({
-            where,
-            select: billingInvoiceSelect,
-            orderBy: [
-                {
-                    createdAt: "desc",
-                },
-                {
-                    invoiceNumber: "asc",
-                },
-            ],
-            skip: (safeCurrentPage - 1) * safePageSize,
-            take: safePageSize,
-        }),
-    ]);
+    const invoiceRecords = await prisma.invoice.findMany({
+        where,
+        select: billingInvoiceSelect,
+        orderBy: [
+            {
+                createdAt: "desc",
+            },
+            {
+                invoiceNumber: "asc",
+            },
+        ],
+    });
     const currentDateValue = formatDateValue(new Date());
     const invoices: BillingInvoiceRow[] = invoiceRecords.map((invoice) =>
         toBillingInvoiceRow(invoice, currentDateValue)
     );
+    const totalInvoices = invoices.length;
+    const totalPages = Math.max(1, Math.ceil(totalInvoices / safePageSize));
+    const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
 
     return {
         invoices,
         totalInvoices,
         currentPage: safeCurrentPage,
         pageSize: safePageSize,
-        totalPages: Math.max(1, Math.ceil(totalInvoices / safePageSize)),
+        totalPages,
     };
 }

@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import Button from "@/components/ui/Button";
 import DateInputField from "@/components/ui/DateInputField";
 import SelectField, { type SelectFieldOption } from "@/components/ui/SelectField";
+import useOutsidePointerDown from "@/hooks/useOutsidePointerDown";
 import { cn } from "@/lib/utils";
 import type {
     BillingInvoiceFilters,
@@ -95,22 +96,11 @@ export default function BillingInvoiceFilter({
         });
     }
 
+    useOutsidePointerDown(isOpen, [wrapperRef, popoverRef], () => setIsOpen(false));
+
     useEffect(() => {
         if (!isOpen) {
             return;
-        }
-
-        function handlePointerDown(event: PointerEvent) {
-            const target = event.target;
-
-            if (
-                target instanceof Node &&
-                (wrapperRef.current?.contains(target) || popoverRef.current?.contains(target))
-            ) {
-                return;
-            }
-
-            setIsOpen(false);
         }
 
         function handleKeyDown(event: KeyboardEvent) {
@@ -119,11 +109,9 @@ export default function BillingInvoiceFilter({
             }
         }
 
-        document.addEventListener("pointerdown", handlePointerDown);
         document.addEventListener("keydown", handleKeyDown);
 
         return () => {
-            document.removeEventListener("pointerdown", handlePointerDown);
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [isOpen]);
@@ -268,9 +256,7 @@ export default function BillingInvoiceFilter({
                         )}
                     >
                         <div className="flex items-center justify-between gap-3 border-b border-mist-gray/70 pb-3">
-                            <p className="text-sm font-black text-midnight-slate">
-                                Filter
-                            </p>
+                            <p className="text-sm font-black text-midnight-slate">Filter</p>
                             <button
                                 type="button"
                                 onClick={handleResetDraft}
@@ -304,7 +290,7 @@ export default function BillingInvoiceFilter({
                                 />
                                 <DateInputField
                                     id="invoice-filter-start-date"
-                                    label="Due Date From"
+                                    label="Start Due Date"
                                     value={draftFilters.dueDateStart}
                                     max={draftFilters.dueDateEnd || undefined}
                                     calendarLabel="Invoice due date filter start date"
@@ -319,7 +305,7 @@ export default function BillingInvoiceFilter({
                                 />
                                 <DateInputField
                                     id="invoice-filter-end-date"
-                                    label="Due Date To"
+                                    label="End Due Date"
                                     value={draftFilters.dueDateEnd}
                                     min={draftFilters.dueDateStart || undefined}
                                     calendarLabel="Invoice due date filter end date"

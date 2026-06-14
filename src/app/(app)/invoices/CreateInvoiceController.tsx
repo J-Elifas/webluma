@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CreateInvoiceForm from "@/components/invoices/CreateInvoiceForm";
 import Modal from "@/components/ui/Modal";
 import type { StatusAlertTone } from "@/components/ui/StatusAlert";
+import usePendingState from "@/hooks/usePendingState";
 import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
 import {
     addDaysToDateValue,
@@ -168,12 +169,7 @@ export default function CreateInvoiceController({
     const router = useRouter();
     const [formValues, setFormValues] = useState<CreateInvoiceFormValues>(createInitialFormValues);
     const [errors, setErrors] = useState<CreateInvoiceFormErrors>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    function setPendingState(isPending: boolean) {
-        setIsSubmitting(isPending);
-        onPendingChange?.(isPending);
-    }
+    const { isSubmitting, setPendingState } = usePendingState(onPendingChange);
 
     function setSubmitError(message: string) {
         onStatusChange?.({

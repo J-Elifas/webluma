@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LogOut, MoreHorizontal } from "lucide-react";
 import Button from "@/components/ui/Button";
+import useOutsidePointerDown from "@/hooks/useOutsidePointerDown";
 
 interface ProfileMenuProps {
     name: string;
@@ -15,20 +16,12 @@ export default function ProfileMenu({ name, email, onLogout }: ProfileMenuProps)
     const menuRef = useRef<HTMLDivElement | null>(null);
     const triggerRef = useRef<HTMLButtonElement | null>(null);
 
+    useOutsidePointerDown(isOpen, [menuRef], () => setIsOpen(false));
+
     useEffect(() => {
         if (!isOpen) {
             return;
         }
-
-        const handlePointerDown = (event: PointerEvent) => {
-            if (!(event.target instanceof Node)) {
-                return;
-            }
-
-            if (!menuRef.current?.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key !== "Escape") {
@@ -39,11 +32,9 @@ export default function ProfileMenu({ name, email, onLogout }: ProfileMenuProps)
             triggerRef.current?.focus({ preventScroll: true });
         };
 
-        document.addEventListener("pointerdown", handlePointerDown);
         document.addEventListener("keydown", handleKeyDown);
 
         return () => {
-            document.removeEventListener("pointerdown", handlePointerDown);
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [isOpen]);

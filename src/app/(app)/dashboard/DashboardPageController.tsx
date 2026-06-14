@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import type { QuickActionId } from "@/components/dashboard/QuickActionsCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
+import StatusAlert from "@/components/ui/StatusAlert";
+import useStatusAlert from "@/hooks/useStatusAlert";
 import type { DashboardOverview } from "@/server/dashboard/types";
 import type { InvoiceClient } from "@/server/invoices/types";
 import AddClientController from "../clients/AddClientController";
@@ -16,13 +17,6 @@ interface DashboardPageControllerProps {
     invoiceClient: InvoiceClient[];
 }
 
-interface DashboardAlert {
-    id: number;
-    tone: StatusAlertTone;
-    title: string;
-    message: string;
-}
-
 export default function DashboardPageController({
     invoiceClient,
     overview,
@@ -31,21 +25,7 @@ export default function DashboardPageController({
     const [loadingLabel, setLoadingLabel] = useState("Saving client");
     const [activeAction, setActiveAction] = useState<QuickActionId | null>(null);
     const [renderedAction, setRenderedAction] = useState<QuickActionId | null>(null);
-    const [alert, setAlert] = useState<DashboardAlert | null>(null);
-
-    useEffect(() => {
-        if (!alert) {
-            return;
-        }
-
-        const timeoutId = window.setTimeout(() => {
-            setAlert(null);
-        }, 6000);
-
-        return () => {
-            window.clearTimeout(timeoutId);
-        };
-    }, [alert]);
+    const { alert, setAlert, showStatusAlert } = useStatusAlert();
 
     function handleQuickActionSelect(action: QuickActionId) {
         setRenderedAction(action);
@@ -70,13 +50,6 @@ export default function DashboardPageController({
         setIsLoading(isPending);
     }
 
-    function handleStatusAlert(nextAlert: Omit<DashboardAlert, "id">) {
-        setAlert({
-            ...nextAlert,
-            id: Date.now(),
-        });
-    }
-
     return (
         <>
             <DashboardContent overview={overview} onQuickActionSelect={handleQuickActionSelect} />
@@ -97,7 +70,7 @@ export default function DashboardPageController({
                     onClose={handleModalClose}
                     onAfterClose={() => handleModalAfterClose("add-client")}
                     onPendingChange={handleClientPendingChange}
-                    onStatusChange={handleStatusAlert}
+                    onStatusChange={showStatusAlert}
                 />
             ) : null}
 
@@ -108,7 +81,7 @@ export default function DashboardPageController({
                     onClose={handleModalClose}
                     onAfterClose={() => handleModalAfterClose("create-invoice")}
                     onPendingChange={handleInvoicePendingChange}
-                    onStatusChange={handleStatusAlert}
+                    onStatusChange={showStatusAlert}
                 />
             ) : null}
 
