@@ -6,8 +6,12 @@ import {
     isValidDateValue,
 } from "@/lib/utils";
 import { handleAuthenticatedJsonRequest } from "@/server/api/authenticated-json-handler";
-import { createInvoice, markInvoicePaid } from "@/server/invoices/mutations";
-import type { CreateInvoiceInput, MarkInvoicePaidInput } from "@/server/invoices/types";
+import { createInvoice, deleteInvoicePayment, markInvoicePaid } from "@/server/invoices/mutations";
+import type {
+    CreateInvoiceInput,
+    DeleteInvoicePaymentInput,
+    MarkInvoicePaidInput,
+} from "@/server/invoices/types";
 
 function parseCreateInvoiceInput(body: unknown): CreateInvoiceInput | null {
     if (!isRecord(body)) {
@@ -68,6 +72,22 @@ function parseMarkInvoicePaidInput(body: unknown): MarkInvoicePaidInput | null {
     };
 }
 
+function parseDeleteInvoicePaymentInput(body: unknown): DeleteInvoicePaymentInput | null {
+    if (!isRecord(body)) {
+        return null;
+    }
+
+    const invoiceId = getStringField(body, "invoiceId");
+
+    if (!invoiceId) {
+        return null;
+    }
+
+    return {
+        invoiceId,
+    };
+}
+
 export async function POST(request: Request) {
     return handleAuthenticatedJsonRequest({
         request,
@@ -81,5 +101,13 @@ export async function PATCH(request: Request) {
         request,
         parseInput: parseMarkInvoicePaidInput,
         mutate: markInvoicePaid,
+    });
+}
+
+export async function DELETE(request: Request) {
+    return handleAuthenticatedJsonRequest({
+        request,
+        parseInput: parseDeleteInvoicePaymentInput,
+        mutate: deleteInvoicePayment,
     });
 }

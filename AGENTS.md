@@ -58,6 +58,7 @@ Keep server-only feature code in `src/server/<feature>/`:
 - Account for common UI states: loading, empty, error, disabled, hover, and active states when relevant.
 - Keep interface copy concise and user-facing errors generic.
 - For UI changes, verify text wrapping, spacing, and overlap behavior in the affected viewports.
+- Keep styling simple and readable; prefer static Tailwind classes for width, spacing, and layout, and avoid calculated styles or dynamic layout math unless the UI requirement truly needs it.
 
 ## Commands
 

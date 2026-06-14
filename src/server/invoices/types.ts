@@ -104,3 +104,15 @@ export interface MarkInvoicePaidMutationResult {
         paymentNotes?: string;
     };
 }
+
+export interface DeleteInvoicePaymentInput {
+    invoiceId: string;
+}
+
+export interface DeleteInvoicePaymentMutationResult {
+    message?: string;
+    ok: boolean;
+    invoice?: {
+        id: string;
+    };
+}
