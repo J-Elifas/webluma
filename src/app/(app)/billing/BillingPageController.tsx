@@ -32,6 +32,15 @@ const defaultBillingInvoiceFilters: BillingInvoiceFilters = {
     dueDateEnd: "",
 };
 const billingInvoicePageSize = 5;
+const invoiceExportHeaders = [
+    "No",
+    "Invoice",
+    "Client",
+    "Billing period",
+    "Amount",
+    "Due date",
+    "Status",
+] as const;
 
 function getNextPaymentReminder(
     invoices: BillingInvoiceRow[],
@@ -79,14 +88,13 @@ function getNextPaymentReminder(
         : null;
 }
 
-function getFilteredInvoiceTableData(
+function getFilteredInvoices(
     tableData: BillingInvoiceTableData,
     filters: BillingInvoiceFilters,
-    searchQuery: string,
-    currentPage: number
-): BillingInvoiceTableData {
+    searchQuery: string
+): BillingInvoiceRow[] {
     const searchTerms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const filteredInvoices = tableData.invoices.filter((invoice) => {
+    return tableData.invoices.filter((invoice) => {
         if (filters.status !== "all" && invoice.status !== filters.status) {
             return false;
         }
@@ -125,6 +133,13 @@ function getFilteredInvoiceTableData(
 
         return true;
     });
+}
+
+function getFilteredInvoiceTableData(
+    tableData: BillingInvoiceTableData,
+    filteredInvoices: BillingInvoiceRow[],
+    currentPage: number
+): BillingInvoiceTableData {
     const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / billingInvoicePageSize));
     const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
     const pageStartIndex = (safeCurrentPage - 1) * billingInvoicePageSize;
@@ -137,6 +152,18 @@ function getFilteredInvoiceTableData(
         totalInvoices: filteredInvoices.length,
         totalPages,
     };
+}
+
+function getInvoiceExportRows(invoices: BillingInvoiceRow[]) {
+    return invoices.map((invoice, index) => [
+        index + 1,
+        invoice.invoiceNumber,
+        invoice.clientName,
+        invoice.billingPeriod,
+        invoice.amount,
+        invoice.dueDate,
+        invoice.statusLabel,
+    ]);
 }
 
 export default function BillingPageController({
@@ -158,15 +185,13 @@ export default function BillingPageController({
     const [isLoading, setIsLoading] = useState(false);
     const [isSavingReminderSettings, setIsSavingReminderSettings] = useState(false);
     const { alert, setAlert, showStatusAlert } = useStatusAlert();
+    const filteredInvoices = useMemo(
+        () => getFilteredInvoices(invoiceTableData, invoiceFilters, invoiceSearchQuery),
+        [invoiceFilters, invoiceSearchQuery, invoiceTableData]
+    );
     const filteredInvoiceTableData = useMemo(
-        () =>
-            getFilteredInvoiceTableData(
-                invoiceTableData,
-                invoiceFilters,
-                invoiceSearchQuery,
-                invoiceCurrentPage
-            ),
-        [invoiceCurrentPage, invoiceFilters, invoiceSearchQuery, invoiceTableData]
+        () => getFilteredInvoiceTableData(invoiceTableData, filteredInvoices, invoiceCurrentPage),
+        [filteredInvoices, invoiceCurrentPage, invoiceTableData]
     );
     const nextPaymentReminder = useMemo(
         () => getNextPaymentReminder(invoiceTableData.invoices, savedReminderPreferences),
@@ -196,6 +221,29 @@ export default function BillingPageController({
 
     function handleInvoicePageChange(page: number) {
         setInvoiceCurrentPage(Math.min(Math.max(1, page), filteredInvoiceTableData.totalPages));
+    }
+
+    async function handleInvoiceExport() {
+        try {
+            const XLSX = await import("xlsx");
+            const worksheet = XLSX.utils.aoa_to_sheet([
+                [...invoiceExportHeaders],
+                ...getInvoiceExportRows(filteredInvoices),
+            ]);
+            const workbook = XLSX.utils.book_new();
+            const exportDate = new Date().toISOString().slice(0, 10);
+
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Invoices");
+            XLSX.writeFile(workbook, `billing-invoices-${exportDate}.xlsx`, {
+                compression: true,
+            });
+        } catch {
+            showStatusAlert({
+                tone: "error",
+                title: "Export not downloaded",
+                message: "Unable to export invoices. Please try again.",
+            });
+        }
     }
 
     function handleMarkInvoicePaidAfterClose() {
@@ -313,6 +361,7 @@ export default function BillingPageController({
                 nextPaymentReminder={nextPaymentReminder}
                 reminderPreferences={savedReminderPreferences}
                 onCreateInvoice={handleCreateInvoiceSelect}
+                onInvoiceExport={handleInvoiceExport}
                 onInvoiceAction={handleInvoiceActionSelect}
                 onInvoiceFiltersChange={handleInvoiceFiltersChange}
                 onInvoicePageChange={handleInvoicePageChange}

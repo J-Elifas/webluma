@@ -25,6 +25,7 @@ interface BillingContentProps {
     nextPaymentReminder: Pick<BillingInvoiceRow, "clientName" | "dueDate" | "invoiceNumber"> | null;
     reminderPreferences: BillingReminderPreferences;
     onCreateInvoice: () => void;
+    onInvoiceExport: () => void;
     onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
     onInvoicePageChange: (page: number) => void;
     onInvoiceSearchQueryChange: (query: string) => void;
@@ -43,6 +44,7 @@ export default function BillingContent({
     nextPaymentReminder,
     onCreateInvoice,
     onInvoiceAction,
+    onInvoiceExport,
     onInvoiceFiltersChange,
     onInvoicePageChange,
     onInvoiceSearchQueryChange,
@@ -76,6 +78,7 @@ export default function BillingContent({
                     invoiceFilters={invoiceFilters}
                     invoiceSearchQuery={invoiceSearchQuery}
                     tableData={filteredInvoiceTableData}
+                    onInvoiceExport={onInvoiceExport}
                     onInvoiceFiltersChange={onInvoiceFiltersChange}
                     onInvoicePageChange={onInvoicePageChange}
                     onInvoiceSearchQueryChange={onInvoiceSearchQueryChange}

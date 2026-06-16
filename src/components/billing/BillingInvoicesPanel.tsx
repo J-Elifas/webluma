@@ -28,6 +28,7 @@ interface BillingInvoicesPanelProps {
     invoiceFilters: BillingInvoiceFilters;
     invoiceSearchQuery: string;
     tableData: BillingInvoiceTableData;
+    onInvoiceExport: () => void;
     onInvoiceFiltersChange: (filters: BillingInvoiceFilters) => void;
     onInvoicePageChange: (page: number) => void;
     onInvoiceSearchQueryChange: (query: string) => void;
@@ -149,6 +150,7 @@ export default function BillingInvoicesPanel({
     invoiceFilters,
     invoiceSearchQuery,
     onInvoiceAction,
+    onInvoiceExport,
     onInvoiceFiltersChange,
     onInvoicePageChange,
     onInvoiceSearchQueryChange,
@@ -190,10 +192,23 @@ export default function BillingInvoicesPanel({
                             />
                         </div>
 
-                        <span className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-4 text-sm font-semibold text-midnight-slate shadow-sm">
-                            <Download className="h-4 w-4 text-slate-gray" aria-hidden="true" />
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            aria-label="Export invoices"
+                            disabled={totalInvoices === 0}
+                            onClick={onInvoiceExport}
+                            className="w-full min-w-[8.5rem] rounded-xl px-3 font-semibold transition-[border-color,box-shadow,background-color] duration-150 focus:outline-none focus:ring-2 focus:ring-luma-blue/25 sm:w-auto"
+                            leftIcon={
+                                <Download
+                                    className="h-4 w-4 text-slate-gray"
+                                    aria-hidden="true"
+                                />
+                            }
+                        >
                             Export
-                        </span>
+                        </Button>
                     </>
                 }
                 pagination={
