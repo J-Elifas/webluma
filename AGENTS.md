@@ -42,6 +42,7 @@ Keep server-only feature code in `src/server/<feature>/`:
 - Prefer Server Components by default. Add `"use client"` only when browser APIs, React state, effects, or event handlers are required.
 - Keep reusable logic and presentation independent of a single route unless the code is genuinely route-specific.
 - Follow existing Tailwind v4 patterns and avoid introducing new styling systems without a clear repo-wide need.
+- Prefer simple readable code over clever generic patterns.
 
 ## Product Direction
 
@@ -73,6 +74,7 @@ Check `package.json` before changing documented commands. Current scripts includ
 - `npm run format:check`: Check Prettier formatting.
 - `npm run format`: Format files with Prettier.
 - `npm run e2e`: Build and run Playwright tests.
+- `npx fallow audit`: treat npx fallow audit as advisory, not as a mandate to restructure the page.
 
 Use `npx tsc --noEmit` for TypeScript checking unless a dedicated npm script is added.
 
