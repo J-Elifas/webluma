@@ -9,16 +9,20 @@ import PrefixedTextInputField from "@/components/ui/PrefixedTextInputField";
 import SelectField, { type SelectFieldOption } from "@/components/ui/SelectField";
 import TextareaField from "@/components/ui/TextareaField";
 import TextInputField from "@/components/ui/TextInputField";
+import { formatShortDate, toUtcDate } from "@/lib/utils";
 import type {
     CreateInvoiceFormErrors,
     CreateInvoiceFormValues,
     InvoiceClient,
+    InvoiceClientBillingPeriod,
 } from "@/server/invoices/types";
 
 interface CreateInvoiceFormProps {
     clients: InvoiceClient[];
     values: CreateInvoiceFormValues;
     errors: CreateInvoiceFormErrors;
+    latestInvoicePeriod?: InvoiceClientBillingPeriod;
+    minimumBillingPeriodStart: string;
     isSubmitting: boolean;
     onCancel: () => void;
     onClientChange: (value: string) => void;
@@ -28,10 +32,32 @@ interface CreateInvoiceFormProps {
     onTextareaChange: ChangeEventHandler<HTMLTextAreaElement>;
 }
 
+function formatBillingPeriodDate(value: string) {
+    return formatShortDate(toUtcDate(value));
+}
+
+function ExistingInvoicePeriodNotice({
+    latestInvoicePeriod,
+}: {
+    latestInvoicePeriod: InvoiceClientBillingPeriod;
+}) {
+    return (
+        <span
+            role="status"
+            className="block rounded-lg bg-luma-blue/10 px-3 py-2 text-xs font-bold leading-5 text-slate-gray"
+        >
+            Existing invoice {latestInvoicePeriod.invoiceNumber} ends{" "}
+            {formatBillingPeriodDate(latestInvoicePeriod.periodEnd)}.
+        </span>
+    );
+}
+
 export default function CreateInvoiceForm({
     clients,
     errors,
     isSubmitting,
+    latestInvoicePeriod,
+    minimumBillingPeriodStart,
     onCancel,
     onClientChange,
     onDateChange,
@@ -107,11 +133,17 @@ export default function CreateInvoiceForm({
                 <h3 id="billing-period-heading" className="text-sm font-black text-midnight-slate">
                     Billing Period
                 </h3>
+                {latestInvoicePeriod && minimumBillingPeriodStart ? (
+                    <ExistingInvoicePeriodNotice
+                        latestInvoicePeriod={latestInvoicePeriod}
+                    />
+                ) : null}
                 <div className="grid gap-4 sm:grid-cols-2">
                     <DateInputField
                         id="billing-period-start"
                         name="periodStart"
                         label="Billing Period Start"
+                        min={minimumBillingPeriodStart || undefined}
                         value={values.periodStart}
                         error={errors.periodStart}
                         disabled={isSubmitting}

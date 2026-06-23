@@ -11,7 +11,9 @@ import {
     addDaysToDateValue,
     createInvoiceNumber,
     formatDateValue,
+    formatShortDate,
     isValidDateValue,
+    toUtcDate,
 } from "@/lib/utils";
 import { clientPlanLabels } from "@/server/clients/options";
 import type {
@@ -84,10 +86,21 @@ function createInitialFormValues(): CreateInvoiceFormValues {
     };
 }
 
+function getMinimumBillingPeriodStart(latestInvoicePeriod?: InvoiceClient["latestInvoicePeriod"]) {
+    return latestInvoicePeriod ? addDaysToDateValue(latestInvoicePeriod.periodEnd, 1) : "";
+}
+
+function formatBillingPeriodDate(value: string) {
+    return formatShortDate(toUtcDate(value));
+}
+
 function validateCreateInvoiceForm(values: CreateInvoiceFormValues, clients: InvoiceClient[]) {
     const errors: CreateInvoiceFormErrors = {};
     const amount = Number(values.amount);
     const selectedClient = clients.find((client) => client.id === values.clientId);
+    const minimumBillingPeriodStart = getMinimumBillingPeriodStart(
+        selectedClient?.latestInvoicePeriod
+    );
 
     if (!values.clientId) {
         errors.clientId = "Select a client.";
@@ -108,6 +121,16 @@ function validateCreateInvoiceForm(values: CreateInvoiceFormValues, clients: Inv
         values.periodEnd !== addDaysToDateValue(values.periodStart, 30)
     ) {
         errors.periodEnd = "Billing period end must be 30 days after the start.";
+    }
+
+    if (
+        !errors.periodStart &&
+        minimumBillingPeriodStart &&
+        values.periodStart < minimumBillingPeriodStart
+    ) {
+        errors.periodStart = `Choose a billing period start from ${formatBillingPeriodDate(
+            minimumBillingPeriodStart
+        )}.`;
     }
 
     if (!values.invoiceNumber.trim()) {
@@ -170,6 +193,10 @@ export default function CreateInvoiceController({
     const [formValues, setFormValues] = useState<CreateInvoiceFormValues>(createInitialFormValues);
     const [errors, setErrors] = useState<CreateInvoiceFormErrors>({});
     const { isSubmitting, setPendingState } = usePendingState(onPendingChange);
+    const selectedClient = clients.find((client) => client.id === formValues.clientId);
+    const minimumBillingPeriodStart = getMinimumBillingPeriodStart(
+        selectedClient?.latestInvoicePeriod
+    );
 
     function setSubmitError(message: string) {
         onStatusChange?.({
@@ -214,16 +241,37 @@ export default function CreateInvoiceController({
 
     function handleClientChange(value: string) {
         const selectedClient = clients.find((client) => client.id === value);
+        const nextMinimumBillingPeriodStart = getMinimumBillingPeriodStart(
+            selectedClient?.latestInvoicePeriod
+        );
 
-        setFormValues((currentValues) => ({
-            ...currentValues,
-            clientId: selectedClient?.id ?? "",
-            plan: selectedClient ? clientPlanLabels[selectedClient.plan] : "",
-            monthlyFee: selectedClient ? String(selectedClient.monthlyFee) : "",
-            clientEmail: selectedClient?.email ?? "",
-            amount: selectedClient ? String(selectedClient.monthlyFee) : "",
-        }));
-        clearFieldErrors(["clientId", "plan", "monthlyFee", "clientEmail", "amount"]);
+        setFormValues((currentValues) => {
+            const shouldClearBillingPeriod = Boolean(
+                nextMinimumBillingPeriodStart &&
+                currentValues.periodStart &&
+                currentValues.periodStart < nextMinimumBillingPeriodStart
+            );
+
+            return {
+                ...currentValues,
+                clientId: selectedClient?.id ?? "",
+                plan: selectedClient ? clientPlanLabels[selectedClient.plan] : "",
+                monthlyFee: selectedClient ? String(selectedClient.monthlyFee) : "",
+                clientEmail: selectedClient?.email ?? "",
+                periodStart: shouldClearBillingPeriod ? "" : currentValues.periodStart,
+                periodEnd: shouldClearBillingPeriod ? "" : currentValues.periodEnd,
+                amount: selectedClient ? String(selectedClient.monthlyFee) : "",
+            };
+        });
+        clearFieldErrors([
+            "clientId",
+            "plan",
+            "monthlyFee",
+            "clientEmail",
+            "periodStart",
+            "periodEnd",
+            "amount",
+        ]);
     }
 
     function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
@@ -320,6 +368,8 @@ export default function CreateInvoiceController({
                 clients={clients}
                 values={formValues}
                 errors={errors}
+                latestInvoicePeriod={selectedClient?.latestInvoicePeriod}
+                minimumBillingPeriodStart={minimumBillingPeriodStart}
                 isSubmitting={isSubmitting}
                 onCancel={handleModalClose}
                 onClientChange={handleClientChange}

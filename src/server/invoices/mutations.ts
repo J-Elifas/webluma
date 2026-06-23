@@ -1,5 +1,11 @@
 import { InvoiceStatus } from "@prisma/client";
-import { formatDate, formatDateValue, toUtcDate, toUtcDateValue } from "@/lib/utils";
+import {
+    addDaysToDateValue,
+    formatDate,
+    formatDateValue,
+    toUtcDate,
+    toUtcDateValue,
+} from "@/lib/utils";
 import { prisma } from "@/server/db/prisma";
 import type {
     CreateInvoiceInput,
@@ -10,9 +16,7 @@ import type {
     MarkInvoicePaidMutationResult,
 } from "./types";
 
-const activeInvoiceStatuses = [InvoiceStatus.pending, InvoiceStatus.overdue];
-
-interface ActiveInvoiceOverlapInput {
+interface InvoiceOverlapInput {
     clientId: string;
     excludedInvoiceId?: string;
     periodEnd: Date;
@@ -31,22 +35,46 @@ function getOverlappingInvoiceMessage(overlappingInvoice: {
     const existingStart = formatDate(overlappingInvoice.periodStart);
     const existingEnd = formatDate(overlappingInvoice.periodEnd);
 
-    return `This client already has an active invoice (${overlappingInvoice.invoiceNumber}) for ${existingStart} to ${existingEnd}. Start the next invoice after ${existingEnd}.`;
+    return `This client already has an invoice (${overlappingInvoice.invoiceNumber}) for ${existingStart} to ${existingEnd}. Start the next invoice after ${existingEnd}.`;
 }
 
-async function findOverlappingActiveInvoice({
+function getLatestInvoicePeriodMessage(latestInvoicePeriod: {
+    invoiceNumber: string;
+    periodEnd: Date;
+}) {
+    const existingEnd = formatDate(latestInvoicePeriod.periodEnd);
+    const nextStartDate = toUtcDate(
+        addDaysToDateValue(toUtcDateValue(latestInvoicePeriod.periodEnd), 1)
+    );
+
+    return `This client already has an invoice (${latestInvoicePeriod.invoiceNumber}) through ${existingEnd}. Start the next invoice on or after ${formatDate(nextStartDate)}.`;
+}
+
+async function findLatestInvoicePeriod(clientId: string) {
+    return prisma.invoice.findFirst({
+        where: {
+            clientId,
+        },
+        select: {
+            invoiceNumber: true,
+            periodEnd: true,
+        },
+        orderBy: {
+            periodEnd: "desc",
+        },
+    });
+}
+
+async function findOverlappingInvoice({
     clientId,
     excludedInvoiceId,
     periodEnd,
     periodStart,
-}: ActiveInvoiceOverlapInput) {
+}: InvoiceOverlapInput) {
     return prisma.invoice.findFirst({
         where: {
             id: excludedInvoiceId ? { not: excludedInvoiceId } : undefined,
             clientId,
-            status: {
-                in: activeInvoiceStatuses,
-            },
             periodStart: {
                 lte: periodEnd,
             },
@@ -88,15 +116,11 @@ export async function createInvoice(
 
     const periodStart = toUtcDate(input.periodStart);
     const periodEnd = toUtcDate(input.periodEnd);
-    const overlappingInvoice = await findOverlappingActiveInvoice({
-        clientId: client.id,
-        periodEnd,
-        periodStart,
-    });
+    const latestInvoicePeriod = await findLatestInvoicePeriod(client.id);
 
-    if (overlappingInvoice) {
+    if (latestInvoicePeriod && periodStart <= latestInvoicePeriod.periodEnd) {
         return {
-            message: getOverlappingInvoiceMessage(overlappingInvoice),
+            message: getLatestInvoicePeriodMessage(latestInvoicePeriod),
             ok: false,
         };
     }
@@ -209,7 +233,7 @@ export async function deleteInvoicePayment(
         };
     }
 
-    const overlappingInvoice = await findOverlappingActiveInvoice({
+    const overlappingInvoice = await findOverlappingInvoice({
         clientId: invoice.clientId,
         excludedInvoiceId: invoice.id,
         periodEnd: invoice.periodEnd,

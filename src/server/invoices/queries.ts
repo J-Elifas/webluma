@@ -128,6 +128,22 @@ export async function getInvoiceClient(): Promise<InvoiceClient[]> {
             startDate: true,
             endDate: true,
             notes: true,
+            invoices: {
+                select: {
+                    invoiceNumber: true,
+                    periodStart: true,
+                    periodEnd: true,
+                },
+                orderBy: [
+                    {
+                        periodEnd: "desc",
+                    },
+                    {
+                        periodStart: "desc",
+                    },
+                ],
+                take: 1,
+            },
         },
         orderBy: [
             {
@@ -151,6 +167,13 @@ export async function getInvoiceClient(): Promise<InvoiceClient[]> {
         startDate: toUtcDateValue(client.startDate),
         endDate: client.endDate ? toUtcDateValue(client.endDate) : undefined,
         notes: client.notes ?? undefined,
+        latestInvoicePeriod: client.invoices[0]
+            ? {
+                  invoiceNumber: client.invoices[0].invoiceNumber,
+                  periodStart: toUtcDateValue(client.invoices[0].periodStart),
+                  periodEnd: toUtcDateValue(client.invoices[0].periodEnd),
+              }
+            : undefined,
     }));
 }
 
