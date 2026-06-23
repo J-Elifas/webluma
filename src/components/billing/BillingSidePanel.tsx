@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { AlertTriangle, CalendarDays, ExternalLink, type LucideIcon } from "lucide-react";
 import type { BillingInvoiceInsights, BillingReminderPreferences } from "@/server/billing/types";
 import type { BillingInvoiceRow } from "@/server/invoices/types";
+import ButtonLink from "@/components/ui/ButtonLink";
 import PaymentRemindersCard from "./PaymentRemindersCard";
 
 type BillingInsightTone = "blue" | "mint" | "rose";
@@ -17,6 +18,7 @@ interface BillingSidePanelProps {
     nextPaymentReminder: Pick<BillingInvoiceRow, "clientName" | "dueDate" | "invoiceNumber"> | null;
     reminderPreferences: BillingReminderPreferences;
     onManageReminders: () => void;
+    onRouteNavigate: (href: string) => void;
 }
 
 const insightToneClasses: Record<BillingInsightTone, string> = {
@@ -75,6 +77,7 @@ export default function BillingSidePanel({
     invoiceInsights,
     nextPaymentReminder,
     onManageReminders,
+    onRouteNavigate,
     reminderPreferences,
 }: BillingSidePanelProps) {
     return (
@@ -104,10 +107,15 @@ export default function BillingSidePanel({
                     </BillingInsightItem>
                 </div>
 
-                <span className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-mist-gray/70 bg-white px-3 text-sm font-bold text-midnight-slate shadow-sm">
+                <ButtonLink
+                    href="/reports"
+                    variant="secondary"
+                    onNavigate={() => onRouteNavigate("/reports")}
+                    className="mt-5 h-10 gap-2 border-mist-gray/70 px-3 py-0 font-bold shadow-sm"
+                >
                     View all reports
                     <ExternalLink className="h-4 w-4 text-slate-gray" aria-hidden="true" />
-                </span>
+                </ButtonLink>
             </article>
 
             <PaymentRemindersCard

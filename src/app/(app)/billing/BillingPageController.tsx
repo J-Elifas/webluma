@@ -9,6 +9,7 @@ import useBillingFilters from "@/hooks/billing/useBillingFilters";
 import useBillingModals from "@/hooks/billing/useBillingModals";
 import useBillingReminderSettings from "@/hooks/billing/useBillingReminderSettings";
 import useInvoiceExport from "@/hooks/billing/useInvoiceExport";
+import useRouteNavigationLoading from "@/hooks/useRouteNavigationLoading";
 import useStatusAlert from "@/hooks/useStatusAlert";
 import type { BillingInvoiceInsights, BillingReminderPreferences } from "@/server/billing/types";
 import type { BillingInvoiceTableData, InvoiceClient } from "@/server/invoices/types";
@@ -32,6 +33,7 @@ export default function BillingPageController({
 }: BillingPageControllerProps) {
     const [isLoading, setIsLoading] = useState(false);
     const { alert, setAlert, showStatusAlert } = useStatusAlert();
+    const handleRouteNavigate = useRouteNavigationLoading();
     const billingFilters = useBillingFilters(invoiceTableData);
     const billingModals = useBillingModals();
     const invoiceExport = useInvoiceExport(billingFilters.filteredInvoices, showStatusAlert);
@@ -65,6 +67,7 @@ export default function BillingPageController({
                 onInvoicePageChange={billingFilters.handleInvoicePageChange}
                 onInvoiceSearchQueryChange={billingFilters.handleInvoiceSearchQueryChange}
                 onManageReminders={reminderSettings.handleReminderSettingsOpen}
+                onRouteNavigate={handleRouteNavigate}
             />
 
             {alert ? (

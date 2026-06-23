@@ -29,7 +29,7 @@ const sidebarItems: SidebarItem[] = [
     { label: "Invoices", icon: FileText },
     { label: "Subscriptions", icon: CreditCard },
     { label: "Billing", icon: WalletCards, href: "/billing" },
-    { label: "Reports", icon: LineChart },
+    { label: "Reports", icon: LineChart, href: "/reports" },
     { label: "Settings", icon: Settings },
 ];
 

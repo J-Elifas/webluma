@@ -5,12 +5,12 @@ import DashboardContent from "@/components/dashboard/DashboardContent";
 import type { QuickActionId } from "@/components/dashboard/QuickActionsCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import StatusAlert from "@/components/ui/StatusAlert";
+import useRouteNavigationLoading from "@/hooks/useRouteNavigationLoading";
 import useStatusAlert from "@/hooks/useStatusAlert";
 import type { DashboardOverview } from "@/server/dashboard/types";
 import type { InvoiceClient } from "@/server/invoices/types";
 import AddClientController from "../clients/AddClientController";
 import CreateInvoiceController from "../invoices/CreateInvoiceController";
-import ViewBillingController from "./ViewBillingController";
 
 interface DashboardPageControllerProps {
     overview: DashboardOverview;
@@ -25,6 +25,7 @@ export default function DashboardPageController({
     const [loadingLabel, setLoadingLabel] = useState("Saving client");
     const [activeAction, setActiveAction] = useState<QuickActionId | null>(null);
     const [renderedAction, setRenderedAction] = useState<QuickActionId | null>(null);
+    const handleRouteNavigate = useRouteNavigationLoading();
     const { alert, setAlert, showStatusAlert } = useStatusAlert();
 
     function handleQuickActionSelect(action: QuickActionId) {
@@ -52,7 +53,11 @@ export default function DashboardPageController({
 
     return (
         <>
-            <DashboardContent overview={overview} onQuickActionSelect={handleQuickActionSelect} />
+            <DashboardContent
+                overview={overview}
+                onQuickActionSelect={handleQuickActionSelect}
+                onRouteNavigate={handleRouteNavigate}
+            />
 
             {alert ? (
                 <StatusAlert
@@ -82,14 +87,6 @@ export default function DashboardPageController({
                     onAfterClose={() => handleModalAfterClose("create-invoice")}
                     onPendingChange={handleInvoicePendingChange}
                     onStatusChange={showStatusAlert}
-                />
-            ) : null}
-
-            {renderedAction === "view-billing" ? (
-                <ViewBillingController
-                    isOpen={activeAction === "view-billing"}
-                    onClose={handleModalClose}
-                    onAfterClose={() => handleModalAfterClose("view-billing")}
                 />
             ) : null}
 

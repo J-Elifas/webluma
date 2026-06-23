@@ -10,6 +10,7 @@ import AppTopbar from "@/components/app/AppTopbar";
 import MobileSidebarButton from "@/components/app/MobileSidebarButton";
 import ProfileMenu from "@/components/app/ProfileMenu";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { RouteNavigationLoadingProvider } from "@/hooks/useRouteNavigationLoading";
 
 interface AppChromeControllerProps {
     children: ReactNode;
@@ -24,6 +25,7 @@ const pageTitles: Record<string, string> = {
     "/billing": "Billing",
     "/clients": "Clients",
     "/dashboard": "Dashboard",
+    "/reports": "Reports",
 };
 
 export default function AppChromeController({
@@ -154,12 +156,12 @@ export default function AppChromeController({
         });
     };
 
-    function handleRouteNavigate(href: string) {
+    const handleRouteNavigate = useCallback((href: string) => {
         if (href !== pathname) {
             setLoadingLabel("Loading page");
             setIsRouteLoading(true);
         }
-    }
+    }, [pathname]);
 
     async function handleLogout() {
         setLoadingLabel("Logging out");
@@ -209,7 +211,9 @@ export default function AppChromeController({
                     />
                 }
             >
-                {children}
+                <RouteNavigationLoadingProvider onNavigate={handleRouteNavigate}>
+                    {children}
+                </RouteNavigationLoadingProvider>
             </AppShell>
 
             <MobileSidebarButton

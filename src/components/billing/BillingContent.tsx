@@ -31,6 +31,7 @@ interface BillingContentProps {
     onInvoiceSearchQueryChange: (query: string) => void;
     onInvoiceAction: (invoice: BillingInvoiceRow) => void;
     onManageReminders: () => void;
+    onRouteNavigate: (href: string) => void;
 }
 
 export default function BillingContent({
@@ -49,6 +50,7 @@ export default function BillingContent({
     onInvoicePageChange,
     onInvoiceSearchQueryChange,
     onManageReminders,
+    onRouteNavigate,
     reminderPreferences,
 }: BillingContentProps) {
     return (
@@ -89,6 +91,7 @@ export default function BillingContent({
                     nextPaymentReminder={nextPaymentReminder}
                     reminderPreferences={reminderPreferences}
                     onManageReminders={onManageReminders}
+                    onRouteNavigate={onRouteNavigate}
                 />
             </section>
         </>

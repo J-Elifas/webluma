@@ -28,6 +28,8 @@ src/
         page.tsx
       billing/
         page.tsx
+      reports/
+        page.tsx
     api/
       auth/
         [...nextauth]/
@@ -66,6 +68,7 @@ Route groups do not appear in public URLs.
 - `/dashboard` renders the main post-login app page from `src/app/(app)/dashboard/page.tsx`.
 - `/clients` renders the clients app page from `src/app/(app)/clients/page.tsx`.
 - `/billing` renders the billing app page from `src/app/(app)/billing/page.tsx`.
+- `/reports` renders the reports app page from `src/app/(app)/reports/page.tsx`.
 
 Keep route-level concerns in `src/app` and reusable UI in `src/components`.
 
@@ -86,7 +89,7 @@ When real auth is added later, the form submission path should be replaced with 
 
 ## App Pages
 
-`/dashboard`, `/clients`, and `/billing` are protected app routes. They should build correctly, use the shared theme, and keep workflows aligned with defined product scope.
+`/dashboard`, `/clients`, `/billing`, and `/reports` are protected app routes. They should build correctly, use the shared theme, and keep workflows aligned with defined product scope.
 
 Post-login pages should use production-ready route surfaces, even when a workflow is intentionally narrow or still being expanded.
 
@@ -166,7 +169,7 @@ Use LF line endings. Keep `.gitattributes` configured with:
 
 - The app uses `src/app` and `src/components` for the route and component tree.
 - `/` redirects to `/login`.
-- `/login`, `/dashboard`, `/clients`, and `/billing` build and route correctly.
+- `/login`, `/dashboard`, `/clients`, `/billing`, and `/reports` build and route correctly.
 - The login page uses the `(auth)` route group.
 - Protected app pages use the `(app)` route group.
 - The login form has real email/password fields and a real submit button.
