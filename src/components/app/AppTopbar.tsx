@@ -1,13 +1,17 @@
 import type { ReactNode } from "react";
 import { Bell, CalendarDays, Sparkles } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 interface AppTopbarProps {
     mobileMenuButton?: ReactNode;
+    pageTitle: string;
     workspaceLabel: string;
 }
 
-export default function AppTopbar({ mobileMenuButton, workspaceLabel }: AppTopbarProps) {
+export default function AppTopbar({ mobileMenuButton, pageTitle, workspaceLabel }: AppTopbarProps) {
+    const isDashboardPage = pageTitle === "Dashboard";
+
     return (
         <header className="flex flex-col gap-4 border-b border-mist-gray/70 px-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div className="flex items-center gap-3">
@@ -22,7 +26,7 @@ export default function AppTopbar({ mobileMenuButton, workspaceLabel }: AppTopba
                 </Button>
 
                 <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-midnight-slate">Dashboard</p>
+                    <p className="text-sm font-bold text-midnight-slate">{pageTitle}</p>
                     <p className="truncate text-xs font-medium text-slate-gray">
                         Monday, May 25, 2026
                     </p>
@@ -33,21 +37,30 @@ export default function AppTopbar({ mobileMenuButton, workspaceLabel }: AppTopba
                 ) : null}
             </div>
 
-            <div className="grid w-full grid-cols-2 gap-2 sm:max-w-md sm:grid-cols-2 lg:w-auto lg:max-w-none">
+            <div
+                className={cn(
+                    "grid",
+                    isDashboardPage
+                        ? "w-full grid-cols-2 gap-2 sm:max-w-md sm:grid-cols-2 lg:w-auto lg:max-w-none"
+                        : "ml-0 grid-cols-1 gap-1 lg:ml-auto"
+                )}
+            >
                 <span className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-luma-blue/20 bg-luma-blue/10 px-3 text-xs font-bold text-luma-blue">
                     <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                     {workspaceLabel}
                 </span>
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    isFullWidth
-                    leftIcon={
-                        <CalendarDays className="h-4 w-4 text-slate-gray" aria-hidden="true" />
-                    }
-                >
-                    This Month
-                </Button>
+                {isDashboardPage ? (
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        isFullWidth
+                        leftIcon={
+                            <CalendarDays className="h-4 w-4 text-slate-gray" aria-hidden="true" />
+                        }
+                    >
+                        This Month
+                    </Button>
+                ) : null}
             </div>
         </header>
     );

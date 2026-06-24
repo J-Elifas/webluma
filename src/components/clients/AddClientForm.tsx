@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChangeEventHandler, FormEventHandler } from "react";
+import Button from "@/components/ui/Button";
 import DateInputField from "@/components/ui/DateInputField";
 import EmailInputField from "@/components/ui/EmailInputField";
 import NumberInputField from "@/components/ui/NumberInputField";
@@ -9,8 +10,7 @@ import SelectField, { type SelectFieldOption } from "@/components/ui/SelectField
 import TextareaField from "@/components/ui/TextareaField";
 import TextInputField from "@/components/ui/TextInputField";
 import UrlInputField from "@/components/ui/UrlInputField";
-import Button from "@/components/ui/Button";
-import type { AddClientFormErrors, AddClientFormValues } from "@/server/dashboard/types";
+import type { AddClientFormErrors, AddClientFormValues } from "@/server/clients/types";
 
 interface AddClientFormProps {
     values: AddClientFormValues;

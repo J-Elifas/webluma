@@ -7,6 +7,49 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+export function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null;
+}
+
+export function getStringField(body: Record<string, unknown>, fieldName: string) {
+    const value = body[fieldName];
+
+    return typeof value === "string" ? value.trim() : "";
+}
+
+export function getOptionalStringField(body: Record<string, unknown>, fieldName: string) {
+    const value = getStringField(body, fieldName);
+
+    return value || undefined;
+}
+
+export const currencyFormatter = new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+});
+
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric",
+});
+
+const dateFormatter = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+    year: "numeric",
+});
+
+export function formatShortDate(date: Date) {
+    return shortDateFormatter.format(date);
+}
+
+export function formatDate(date: Date) {
+    return dateFormatter.format(date);
+}
+
 export function formatDateValue(date: Date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");

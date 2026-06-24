@@ -9,9 +9,14 @@ import type { DashboardOverview } from "@/server/dashboard/types";
 interface DashboardContentProps {
     overview: DashboardOverview;
     onQuickActionSelect: (action: QuickActionId) => void;
+    onRouteNavigate: (href: string) => void;
 }
 
-export default function DashboardContent({ overview, onQuickActionSelect }: DashboardContentProps) {
+export default function DashboardContent({
+    overview,
+    onQuickActionSelect,
+    onRouteNavigate,
+}: DashboardContentProps) {
     return (
         <>
             <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -39,7 +44,11 @@ export default function DashboardContent({ overview, onQuickActionSelect }: Dash
                     clients={overview.clients}
                     emptyStateMessage={overview.recentClientsEmptyMessage}
                 />
-                <QuickActionsCard isGuest={overview.isGuest} onActionSelect={onQuickActionSelect} />
+                <QuickActionsCard
+                    isGuest={overview.isGuest}
+                    onActionSelect={onQuickActionSelect}
+                    onRouteNavigate={onRouteNavigate}
+                />
             </section>
         </>
     );

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
-type ModalSize = "md" | "lg";
+type ModalSize = "sm" | "md" | "lg";
 
 interface ModalProps {
     isOpen: boolean;
@@ -19,11 +19,14 @@ interface ModalProps {
 }
 
 const sizeClasses: Record<ModalSize, string> = {
+    sm: "max-w-md",
     md: "max-w-lg",
     lg: "max-w-2xl",
 };
 
 const modalExitTransitionMs = 150;
+const focusableSelector =
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function getExitDelay() {
     if (typeof window.matchMedia !== "function") {
@@ -47,13 +50,52 @@ export default function Modal({
     const titleId = useId();
     const descriptionId = useId();
     const dialogRef = useRef<HTMLElement | null>(null);
-    const afterCloseRef = useRef(onAfterClose);
     const [isPresent, setIsPresent] = useState(isOpen);
     const [isVisible, setIsVisible] = useState(false);
 
-    useEffect(() => {
-        afterCloseRef.current = onAfterClose;
-    }, [onAfterClose]);
+    const handleAfterClose = useEffectEvent(() => {
+        onAfterClose?.();
+    });
+
+    const handleDocumentKeyDown = useEffectEvent((event: KeyboardEvent) => {
+        if (!isOpen) {
+            return;
+        }
+
+        if (event.key === "Escape") {
+            onClose();
+        }
+
+        if (event.key !== "Tab") {
+            return;
+        }
+
+        const dialog = dialogRef.current;
+
+        if (!dialog) {
+            return;
+        }
+
+        const focusableElements = Array.from(
+            dialog.querySelectorAll<HTMLElement>(focusableSelector)
+        );
+
+        if (focusableElements.length === 0) {
+            event.preventDefault();
+            return;
+        }
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+        }
+    });
 
     useEffect(() => {
         if (isOpen) {
@@ -85,7 +127,7 @@ export default function Modal({
             setIsVisible(false);
             timeoutId = window.setTimeout(() => {
                 setIsPresent(false);
-                afterCloseRef.current?.();
+                handleAfterClose();
             }, getExitDelay());
         });
 
@@ -105,61 +147,13 @@ export default function Modal({
 
         const previousOverflow = document.body.style.overflow;
         document.body.style.overflow = "hidden";
+        document.addEventListener("keydown", handleDocumentKeyDown);
 
         return () => {
             document.body.style.overflow = previousOverflow;
+            document.removeEventListener("keydown", handleDocumentKeyDown);
         };
     }, [isPresent]);
-
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        function handleKeyDown(event: KeyboardEvent) {
-            if (event.key === "Escape") {
-                onClose();
-            }
-
-            if (event.key !== "Tab") {
-                return;
-            }
-
-            const dialog = dialogRef.current;
-
-            if (!dialog) {
-                return;
-            }
-
-            const focusableElements = Array.from(
-                dialog.querySelectorAll<HTMLElement>(
-                    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                )
-            );
-
-            if (focusableElements.length === 0) {
-                event.preventDefault();
-                return;
-            }
-
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
-
-            if (event.shiftKey && document.activeElement === firstElement) {
-                event.preventDefault();
-                lastElement.focus();
-            } else if (!event.shiftKey && document.activeElement === lastElement) {
-                event.preventDefault();
-                firstElement.focus();
-            }
-        }
-
-        document.addEventListener("keydown", handleKeyDown);
-
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [isOpen, onClose]);
 
     if (!isPresent) {
         return null;
@@ -173,7 +167,9 @@ export default function Modal({
             <div
                 className={cn(
                     "absolute inset-0 bg-midnight-slate/45 backdrop-blur-sm transition-opacity motion-reduce:transition-none",
-                    isVisible ? "opacity-100 duration-200 ease-out" : "opacity-0 duration-150 ease-in"
+                    isVisible
+                        ? "opacity-100 duration-200 ease-out"
+                        : "opacity-0 duration-150 ease-in"
                 )}
                 aria-hidden="true"
                 onMouseDown={isOpen ? onClose : undefined}
@@ -188,6 +184,7 @@ export default function Modal({
                 className={cn(
                     "relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-[1.25rem] border border-mist-gray/80 bg-white shadow-[0_30px_80px_-34px_rgba(15,23,42,0.65)] transition-[opacity,translate,scale] will-change-[opacity,translate,scale] motion-reduce:transition-none sm:max-h-[min(44rem,calc(100dvh-3rem))]",
                     sizeClasses[size],
+                    !isOpen && "pointer-events-none",
                     isVisible
                         ? "translate-y-0 scale-100 opacity-100 duration-200 ease-out"
                         : "translate-y-3 scale-[0.98] opacity-0 duration-150 ease-in"

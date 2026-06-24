@@ -30,16 +30,19 @@ Keep server-only feature code in `src/server/<feature>/`:
 
 ## Coding Standards
 
+- Keep code simple and developer-readable; avoid overengineering, unnecessary constants, wrapper components, helper functions, or clever abstractions for one-off values or simple logic.
 - Use TypeScript for application code (`.ts` / `.tsx`).
 - Use 4-space indentation and keep components focused.
 - All React component files must use PascalCase, for example `LoginForm.tsx`, `LoginCard.tsx`, `IllustrationPanel.tsx`, and `DashboardContent.tsx`.
 - All React component function/export names must use PascalCase and should match the file name.
+- Name component files by product purpose, not UI implementation; avoid suffixes like `Popover`, `Modal`, or `Dropdown` unless the component is truly reusable UI infrastructure.
 - Use App Router conventions for routes (`page.tsx`, `layout.tsx`, route groups, and dynamic segments like `[id]`).
 - Use conventional server module names such as `queries.ts`, `mutations.ts`, `types.ts`, `options.ts`, and `password.ts`.
 - Use kebab-case for general utilities when a convention-specific name does not apply.
 - Prefer Server Components by default. Add `"use client"` only when browser APIs, React state, effects, or event handlers are required.
 - Keep reusable logic and presentation independent of a single route unless the code is genuinely route-specific.
 - Follow existing Tailwind v4 patterns and avoid introducing new styling systems without a clear repo-wide need.
+- Prefer simple readable code over clever generic patterns.
 
 ## Product Direction
 
@@ -56,6 +59,7 @@ Keep server-only feature code in `src/server/<feature>/`:
 - Account for common UI states: loading, empty, error, disabled, hover, and active states when relevant.
 - Keep interface copy concise and user-facing errors generic.
 - For UI changes, verify text wrapping, spacing, and overlap behavior in the affected viewports.
+- Keep styling simple and readable; prefer static Tailwind classes for width, spacing, and layout, and avoid calculated styles or dynamic layout math unless the UI requirement truly needs it.
 
 ## Commands
 
@@ -70,6 +74,7 @@ Check `package.json` before changing documented commands. Current scripts includ
 - `npm run format:check`: Check Prettier formatting.
 - `npm run format`: Format files with Prettier.
 - `npm run e2e`: Build and run Playwright tests.
+- `npx fallow audit`: treat npx fallow audit as advisory, not as a mandate to restructure the page.
 
 Use `npx tsc --noEmit` for TypeScript checking unless a dedicated npm script is added.
 

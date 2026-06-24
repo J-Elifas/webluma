@@ -1,7 +1,8 @@
 "use client";
 
 import { Check, ChevronDown } from "lucide-react";
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import useOutsidePointerDown from "@/hooks/useOutsidePointerDown";
 import { cn } from "@/lib/utils";
 import FieldLabel from "./FieldLabel";
 import { fieldControlClasses } from "./field-styles";
@@ -88,27 +89,7 @@ export default function SelectField({
     const [isOpen, setIsOpen] = useState(false);
     const [isListboxRendered, setIsListboxRendered] = useState(false);
 
-    useEffect(() => {
-        if (!isOpen) {
-            return;
-        }
-
-        function handlePointerDown(event: PointerEvent) {
-            const target = event.target;
-
-            if (target instanceof Node && wrapperRef.current?.contains(target)) {
-                return;
-            }
-
-            setIsOpen(false);
-        }
-
-        document.addEventListener("pointerdown", handlePointerDown);
-
-        return () => {
-            document.removeEventListener("pointerdown", handlePointerDown);
-        };
-    }, [isOpen]);
+    useOutsidePointerDown(isOpen, [wrapperRef], () => setIsOpen(false));
 
     function openListbox() {
         if (disabled) {
@@ -276,7 +257,7 @@ export default function SelectField({
                             }
                         }}
                         className={cn(
-                            "absolute top-full left-0 right-0 z-40 mt-2 origin-top overflow-hidden rounded-xl border border-mist-gray/80 bg-white p-1 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-[opacity,transform] duration-150 ease-out",
+                            "absolute top-full left-0 right-0 z-40 mt-2 origin-top overflow-hidden rounded-xl border border-mist-gray/80 bg-white p-1 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.55)] transition-all duration-150 ease-out",
                             isOpen
                                 ? "translate-y-0 scale-100 opacity-100"
                                 : "pointer-events-none -translate-y-1 scale-[0.98] opacity-0"
