@@ -6,14 +6,18 @@ import { X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
+type ModalRole = "dialog" | "alertdialog";
 type ModalSize = "sm" | "md" | "lg";
 
 interface ModalProps {
     isOpen: boolean;
     title: string;
+    ariaDescribedBy?: string;
     description?: string;
     children: ReactNode;
+    role?: ModalRole;
     size?: ModalSize;
+    showCloseButton?: boolean;
     onClose: () => void;
     onAfterClose?: () => void;
 }
@@ -39,11 +43,14 @@ function getExitDelay() {
 }
 
 export default function Modal({
+    ariaDescribedBy,
     children,
     description,
     isOpen,
     onAfterClose,
     onClose,
+    role = "dialog",
+    showCloseButton = true,
     size = "md",
     title,
 }: ModalProps) {
@@ -176,10 +183,10 @@ export default function Modal({
             />
             <section
                 ref={dialogRef}
-                role="dialog"
+                role={role}
                 aria-modal="true"
                 aria-labelledby={titleId}
-                aria-describedby={description ? descriptionId : undefined}
+                aria-describedby={ariaDescribedBy ?? (description ? descriptionId : undefined)}
                 inert={!isOpen ? true : undefined}
                 className={cn(
                     "relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full flex-col overflow-hidden rounded-[1.25rem] border border-mist-gray/80 bg-white shadow-[0_30px_80px_-34px_rgba(15,23,42,0.65)] transition-[opacity,translate,scale] will-change-[opacity,translate,scale] motion-reduce:transition-none sm:max-h-[min(44rem,calc(100dvh-3rem))]",
@@ -204,17 +211,19 @@ export default function Modal({
                             </p>
                         ) : null}
                     </div>
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        size="icon-md"
-                        aria-label="Close modal"
-                        autoFocus
-                        onClick={onClose}
-                        className="text-slate-gray hover:text-midnight-slate"
-                    >
-                        <X className="h-4 w-4" aria-hidden="true" />
-                    </Button>
+                    {showCloseButton ? (
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="icon-md"
+                            aria-label="Close modal"
+                            autoFocus
+                            onClick={onClose}
+                            className="text-slate-gray hover:text-midnight-slate"
+                        >
+                            <X className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                    ) : null}
                 </header>
                 <div
                     data-modal-scroll-container="true"

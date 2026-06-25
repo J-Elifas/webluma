@@ -6,7 +6,7 @@ import type {
     BillingInvoiceRow,
     BillingInvoiceTableData,
 } from "@/server/invoices/types";
-import useBillingPagination from "./useBillingPagination";
+import usePagination from "@/hooks/usePagination";
 
 const defaultBillingInvoiceFilters: BillingInvoiceFilters = {
     status: "all",
@@ -16,31 +16,19 @@ const defaultBillingInvoiceFilters: BillingInvoiceFilters = {
 };
 const billingInvoicePageSize = 5;
 
-function matchesInvoiceStatusFilter(
-    invoice: BillingInvoiceRow,
-    filters: BillingInvoiceFilters
-) {
+function matchesInvoiceStatusFilter(invoice: BillingInvoiceRow, filters: BillingInvoiceFilters) {
     return filters.status === "all" || invoice.status === filters.status;
 }
 
-function matchesInvoiceClientFilter(
-    invoice: BillingInvoiceRow,
-    filters: BillingInvoiceFilters
-) {
+function matchesInvoiceClientFilter(invoice: BillingInvoiceRow, filters: BillingInvoiceFilters) {
     return filters.clientId === "all" || invoice.clientId === filters.clientId;
 }
 
-function matchesInvoiceStartDateFilter(
-    invoice: BillingInvoiceRow,
-    filters: BillingInvoiceFilters
-) {
+function matchesInvoiceStartDateFilter(invoice: BillingInvoiceRow, filters: BillingInvoiceFilters) {
     return !filters.dueDateStart || invoice.dueDateValue >= filters.dueDateStart;
 }
 
-function matchesInvoiceEndDateFilter(
-    invoice: BillingInvoiceRow,
-    filters: BillingInvoiceFilters
-) {
+function matchesInvoiceEndDateFilter(invoice: BillingInvoiceRow, filters: BillingInvoiceFilters) {
     return !filters.dueDateEnd || invoice.dueDateValue <= filters.dueDateEnd;
 }
 
@@ -129,8 +117,10 @@ export default function useBillingFilters(invoiceTableData: BillingInvoiceTableD
         () => getFilteredInvoices(invoiceTableData, invoiceFilters, invoiceSearchQuery),
         [invoiceFilters, invoiceSearchQuery, invoiceTableData]
     );
-    const { currentPage, handlePageChange, pageStartIndex, resetPage, totalPages } =
-        useBillingPagination(filteredInvoices.length, billingInvoicePageSize);
+    const { currentPage, handlePageChange, pageStartIndex, resetPage, totalPages } = usePagination(
+        filteredInvoices.length,
+        billingInvoicePageSize
+    );
     const filteredInvoiceTableData = useMemo(
         () =>
             getFilteredInvoiceTableData(

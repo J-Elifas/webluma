@@ -1,6 +1,7 @@
 "use client";
 
 import type { StatusAlertTone } from "@/components/ui/StatusAlert";
+import useTableExport from "@/hooks/useTableExport";
 import type { BillingInvoiceRow } from "@/server/invoices/types";
 
 interface InvoiceExportStatus {
@@ -35,27 +36,22 @@ export default function useInvoiceExport(
     invoices: BillingInvoiceRow[],
     onStatusChange: (status: InvoiceExportStatus) => void
 ) {
-    async function handleInvoiceExport() {
-        try {
-            const XLSX = await import("xlsx");
-            const worksheet = XLSX.utils.aoa_to_sheet([
-                [...invoiceExportHeaders],
-                ...getInvoiceExportRows(invoices),
-            ]);
-            const workbook = XLSX.utils.book_new();
-            const exportDate = new Date().toISOString().slice(0, 10);
+    const { handleExport } = useTableExport({
+        rows: invoices,
+        headers: invoiceExportHeaders,
+        getRows: getInvoiceExportRows,
+        sheetName: "Invoices",
+        fileNamePrefix: "billing-invoices",
+        onStatusChange,
+        errorStatus: {
+            tone: "error",
+            title: "Export not downloaded",
+            message: "Unable to export invoices. Please try again.",
+        },
+    });
 
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Invoices");
-            XLSX.writeFile(workbook, `billing-invoices-${exportDate}.xlsx`, {
-                compression: true,
-            });
-        } catch {
-            onStatusChange({
-                tone: "error",
-                title: "Export not downloaded",
-                message: "Unable to export invoices. Please try again.",
-            });
-        }
+    function handleInvoiceExport() {
+        return handleExport();
     }
 
     return {

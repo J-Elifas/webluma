@@ -1,8 +1,8 @@
 import { getOptionalStringField, getStringField, isRecord, isValidDateValue } from "@/lib/utils";
 import { handleAuthenticatedJsonRequest } from "@/server/api/authenticated-json-handler";
-import { createClient } from "@/server/clients/mutations";
+import { createClient, deleteClient } from "@/server/clients/mutations";
 import { clientPlans } from "@/server/clients/options";
-import type { AddClientInput, ClientPlan } from "@/server/clients/types";
+import type { AddClientInput, ClientPlan, DeleteClientInput } from "@/server/clients/types";
 
 function parseAddClientInput(body: unknown): AddClientInput | null {
     if (!isRecord(body)) {
@@ -46,10 +46,34 @@ function parseAddClientInput(body: unknown): AddClientInput | null {
     };
 }
 
+function parseDeleteClientInput(body: unknown): DeleteClientInput | null {
+    if (!isRecord(body)) {
+        return null;
+    }
+
+    const clientId = getStringField(body, "clientId");
+
+    if (!clientId) {
+        return null;
+    }
+
+    return {
+        clientId,
+    };
+}
+
 export async function POST(request: Request) {
     return handleAuthenticatedJsonRequest({
         request,
         parseInput: parseAddClientInput,
         mutate: createClient,
+    });
+}
+
+export async function DELETE(request: Request) {
+    return handleAuthenticatedJsonRequest({
+        request,
+        parseInput: parseDeleteClientInput,
+        mutate: deleteClient,
     });
 }

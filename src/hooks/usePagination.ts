@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function useBillingPagination(totalItems: number, pageSize: number) {
+export default function usePagination(totalItems: number, pageSize: number) {
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
     const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);

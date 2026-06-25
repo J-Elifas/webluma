@@ -1,5 +1,13 @@
-import AppPlaceholder from "@/components/app/AppPlaceholder";
+import { getClientPageData } from "@/server/clients/queries";
+import ClientPageController from "./ClientPageController";
 
-export default function ClientsPage() {
-    return <AppPlaceholder title="Clients" />;
+export default async function ClientsPage() {
+    const clientPageData = await getClientPageData();
+
+    return (
+        <ClientPageController
+            clientTableData={clientPageData.tableData}
+            isGuest={clientPageData.isGuest}
+        />
+    );
 }
