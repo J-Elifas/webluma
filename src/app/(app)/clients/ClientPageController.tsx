@@ -11,15 +11,13 @@ import useStatusAlert from "@/hooks/useStatusAlert";
 import type { ClientTableData } from "@/server/clients/types";
 import AddClientController from "./AddClientController";
 
-interface ClientPageControllerProps {
-    clientTableData: ClientTableData;
-    isGuest: boolean;
-}
-
 export default function ClientPageController({
     clientTableData,
     isGuest,
-}: ClientPageControllerProps) {
+}: {
+    clientTableData: ClientTableData;
+    isGuest: boolean;
+}) {
     const [isLoading, setIsLoading] = useState(false);
     const { alert, setAlert, showStatusAlert } = useStatusAlert();
     const clientFilters = useClientFilters(clientTableData);
@@ -35,6 +33,7 @@ export default function ClientPageController({
                 filteredClientTableData={clientFilters.filteredClientTableData}
                 isGuest={isGuest}
                 onAddClient={clientModals.handleAddClientSelect}
+                onClientEdit={clientModals.handleEditClientSelect}
                 onClientExport={clientExport.handleClientExport}
                 onClientFiltersChange={clientFilters.handleClientFiltersChange}
                 onClientPageChange={clientFilters.handleClientPageChange}
@@ -52,8 +51,11 @@ export default function ClientPageController({
             ) : null}
 
             <AddClientController
-                isOpen={clientModals.isAddClientOpen}
-                onClose={clientModals.handleAddClientClose}
+                key={clientModals.selectedClient?.id ?? "add-client"}
+                client={clientModals.selectedClient}
+                isOpen={clientModals.isClientFormOpen}
+                onAfterClose={clientModals.handleClientFormAfterClose}
+                onClose={clientModals.handleClientFormClose}
                 onPendingChange={setIsLoading}
                 onStatusChange={showStatusAlert}
             />

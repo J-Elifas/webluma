@@ -3,12 +3,6 @@ import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
-interface DataTableProps {
-    children: ReactNode;
-    pagination?: ReactNode;
-    toolbar?: ReactNode;
-}
-
 interface TableSearchProps {
     label: string;
     onValueChange: (value: string) => void;
@@ -42,7 +36,15 @@ function getPaginationItems(currentPage: number, totalPages: number) {
     return [1, "ellipsis", currentPage, "ellipsis", totalPages] as const;
 }
 
-export default function DataTable({ children, pagination, toolbar }: DataTableProps) {
+export default function DataTable({
+    children,
+    pagination,
+    toolbar,
+}: {
+    children: ReactNode;
+    pagination?: ReactNode;
+    toolbar?: ReactNode;
+}) {
     return (
         <article className="min-w-0 overflow-hidden rounded-[1.25rem] border border-mist-gray/70 bg-white shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
             {toolbar ? (
@@ -76,6 +78,24 @@ export function TableSearch({ label, onValueChange, placeholder, value }: TableS
                 className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-midnight-slate placeholder:text-slate-gray focus:outline-none"
             />
         </div>
+    );
+}
+
+export function TableHeader({
+    columns,
+}: {
+    columns: readonly { className?: string; label: string }[];
+}) {
+    return (
+        <thead>
+            <tr className="bg-cloud-white/80 text-xs font-bold uppercase text-slate-gray">
+                {columns.map((column) => (
+                    <th key={column.label} className={cn("px-4 py-3", column.className)}>
+                        {column.label}
+                    </th>
+                ))}
+            </tr>
+        </thead>
     );
 }
 

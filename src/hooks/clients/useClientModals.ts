@@ -1,21 +1,36 @@
 "use client";
 
 import { useState } from "react";
+import type { ClientRow } from "@/server/clients/types";
 
 export default function useClientModals() {
-    const [isAddClientOpen, setIsAddClientOpen] = useState(false);
+    const [isClientFormOpen, setIsClientFormOpen] = useState(false);
+    const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
 
     function handleAddClientSelect() {
-        setIsAddClientOpen(true);
+        setSelectedClient(null);
+        setIsClientFormOpen(true);
     }
 
-    function handleAddClientClose() {
-        setIsAddClientOpen(false);
+    function handleEditClientSelect(client: ClientRow) {
+        setSelectedClient(client);
+        setIsClientFormOpen(true);
+    }
+
+    function handleClientFormClose() {
+        setIsClientFormOpen(false);
+    }
+
+    function handleClientFormAfterClose() {
+        setSelectedClient(null);
     }
 
     return {
-        isAddClientOpen,
-        handleAddClientClose,
+        isClientFormOpen,
+        selectedClient,
         handleAddClientSelect,
+        handleClientFormAfterClose,
+        handleClientFormClose,
+        handleEditClientSelect,
     };
 }

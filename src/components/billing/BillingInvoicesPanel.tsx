@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Download } from "lucide-react";
-import DataTable, { TablePagination, TableSearch } from "@/components/ui/DataTable";
+import DataTable, { TableHeader, TablePagination, TableSearch } from "@/components/ui/DataTable";
 import Button from "@/components/ui/Button";
 import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
 import useStatusAlert from "@/hooks/useStatusAlert";
@@ -48,6 +48,16 @@ const statusClasses: Record<InvoiceStatusTone, string> = {
 };
 const deletePaymentErrorMessage = "Unable to delete paid status. Please try again.";
 const deletePaymentSuccessMessage = "Invoice payment details were cleared.";
+const invoiceTableColumns = [
+    { label: "No", className: "w-16" },
+    { label: "Invoice" },
+    { label: "Client" },
+    { label: "Billing period" },
+    { label: "Amount" },
+    { label: "Due date" },
+    { label: "Status" },
+    { label: "Actions" },
+] as const;
 
 async function readDeleteInvoicePaymentResponse(
     response: Response
@@ -223,18 +233,7 @@ export default function BillingInvoicesPanel({
                     />
                 }
             >
-                <thead>
-                    <tr className="bg-cloud-white/80 text-xs font-bold uppercase text-slate-gray">
-                        <th className="w-16 px-4 py-3">No</th>
-                        <th className="px-4 py-3">Invoice</th>
-                        <th className="px-4 py-3">Client</th>
-                        <th className="px-4 py-3">Billing period</th>
-                        <th className="px-4 py-3">Amount</th>
-                        <th className="px-4 py-3">Due date</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3">Actions</th>
-                    </tr>
-                </thead>
+                <TableHeader columns={invoiceTableColumns} />
                 <tbody className="divide-y divide-mist-gray/60">
                     {invoices.length > 0 ? (
                         invoices.map((invoice, index) => {

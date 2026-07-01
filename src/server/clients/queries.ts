@@ -25,9 +25,12 @@ const clientSelect = {
     contactPerson: true,
     phone: true,
     email: true,
+    website: true,
     plan: true,
+    monthlyFee: true,
     startDate: true,
     endDate: true,
+    notes: true,
     createdAt: true,
     invoices: {
         select: {
@@ -44,9 +47,12 @@ interface ClientRecord {
     contactPerson: string;
     phone: string;
     email: string;
+    website: string | null;
     plan: PrismaClientPlan;
+    monthlyFee: number;
     startDate: Date;
     endDate: Date | null;
+    notes: string | null;
     createdAt: Date;
     invoices: {
         amount: Prisma.Decimal;
@@ -136,8 +142,13 @@ function toClientRow(client: ClientRecord, todayValue: string): ClientRow {
         contactPerson: client.contactPerson,
         phone: client.phone,
         email: client.email,
+        website: client.website ?? "",
         plan,
         planLabel: clientPlanLabels[plan],
+        monthlyFeeValue: client.monthlyFee,
+        startDateValue: toUtcDateValue(client.startDate),
+        endDateValue: client.endDate ? toUtcDateValue(client.endDate) : "",
+        notes: client.notes ?? "",
         status,
         statusLabel: statusLabels[status],
         totalInvoiced: currencyFormatter.format(totalInvoicedValue),

@@ -3,7 +3,7 @@
 import { UserPlus } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
-import type { ClientFilters, ClientTableData } from "@/server/clients/types";
+import type { ClientFilters, ClientRow, ClientTableData } from "@/server/clients/types";
 import ClientMetricCards from "./ClientMetricCards";
 import ClientsPanel from "./ClientsPanel";
 
@@ -14,6 +14,7 @@ interface ClientsContentProps {
     filteredClientTableData: ClientTableData;
     isGuest: boolean;
     onAddClient: () => void;
+    onClientEdit: (client: ClientRow) => void;
     onClientExport: () => void;
     onClientFiltersChange: (filters: ClientFilters) => void;
     onClientPageChange: (page: number) => void;
@@ -27,6 +28,7 @@ export default function ClientsContent({
     filteredClientTableData,
     isGuest,
     onAddClient,
+    onClientEdit,
     onClientExport,
     onClientFiltersChange,
     onClientPageChange,
@@ -57,6 +59,7 @@ export default function ClientsContent({
                 clientFilters={clientFilters}
                 clientSearchQuery={clientSearchQuery}
                 tableData={filteredClientTableData}
+                onClientEdit={onClientEdit}
                 onClientExport={onClientExport}
                 onClientFiltersChange={onClientFiltersChange}
                 onClientPageChange={onClientPageChange}

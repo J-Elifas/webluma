@@ -1,33 +1,30 @@
 "use client";
 
-import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type FieldErrors } from "react-hook-form";
+import { z } from "zod";
 import AddClientForm from "@/components/clients/AddClientForm";
 import Modal from "@/components/ui/Modal";
 import type { StatusAlertTone } from "@/components/ui/StatusAlert";
-import usePendingState from "@/hooks/usePendingState";
 import { scrollToFirstFieldError } from "@/lib/field-error-scroll";
 import { isValidDateValue, isValidHttpUrl } from "@/lib/utils";
 import { clientPlans } from "@/server/clients/options";
 import type {
-    AddClientFormErrors,
     AddClientFormValues,
     AddClientInput,
     ClientPlan,
+    ClientRow,
+    UpdateClientInput,
 } from "@/server/clients/types";
 
 interface AddClientControllerProps {
+    client?: ClientRow | null;
     isOpen: boolean;
     onClose: () => void;
     onAfterClose?: () => void;
     onPendingChange?: (isPending: boolean) => void;
-    onStatusChange?: (status: AddClientStatus) => void;
-}
-
-interface AddClientStatus {
-    tone: StatusAlertTone;
-    title: string;
-    message: string;
+    onStatusChange?: (status: { tone: StatusAlertTone; title: string; message: string }) => void;
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -55,7 +52,6 @@ const addClientFieldIds: Record<(typeof addClientFieldOrder)[number], string> = 
     endDate: "end-date",
     notes: "client-notes",
 };
-
 const initialFormValues: AddClientFormValues = {
     companyName: "",
     contactPerson: "",
@@ -68,64 +64,88 @@ const initialFormValues: AddClientFormValues = {
     endDate: "",
     notes: "",
 };
+const endDateRangeChecks = [
+    (values: AddClientFormValues) => Boolean(values.startDate),
+    (values: AddClientFormValues) => Boolean(values.endDate),
+    (values: AddClientFormValues) => isValidDateValue(values.startDate),
+    (values: AddClientFormValues) => isValidDateValue(values.endDate),
+    (values: AddClientFormValues) => values.endDate < values.startDate,
+] as const;
 
-function validateAddClientForm(values: AddClientFormValues) {
-    const errors: AddClientFormErrors = {};
-    const trimmedCompanyName = values.companyName.trim();
-    const trimmedContactPerson = values.contactPerson.trim();
-    const trimmedEmail = values.email.trim();
-    const trimmedPhone = values.phone.trim();
-    const trimmedWebsite = values.website.trim();
-    const monthlyFee = Number(values.monthlyFee);
+const addClientFormSchema = z
+    .object({
+        companyName: z.string().trim().min(1, "Enter the company name."),
+        contactPerson: z.string().trim().min(1, "Enter a contact person."),
+        email: z
+            .string()
+            .trim()
+            .refine((value) => Boolean(value), "Enter an email address.")
+            .refine((value) => !value || emailPattern.test(value), "Enter a valid email address."),
+        phone: z.string().trim().min(1, "Enter a phone number."),
+        website: z
+            .string()
+            .trim()
+            .refine((value) => !value || isValidHttpUrl(value), "Enter a valid website URL."),
+        plan: z
+            .string()
+            .refine((value) => clientPlans.includes(value as ClientPlan), "Select a plan."),
+        monthlyFee: z
+            .string()
+            .trim()
+            .refine((value) => Boolean(value), "Enter the monthly fee.")
+            .refine((value) => {
+                if (!value) {
+                    return true;
+                }
 
-    if (!trimmedCompanyName) {
-        errors.companyName = "Enter the company name.";
-    }
+                const monthlyFee = Number(value);
 
-    if (!trimmedContactPerson) {
-        errors.contactPerson = "Enter a contact person.";
-    }
+                return Number.isFinite(monthlyFee) && monthlyFee >= 0;
+            }, "Enter a valid monthly fee."),
+        startDate: z
+            .string()
+            .refine((value) => Boolean(value), "Select a start date.")
+            .refine((value) => !value || isValidDateValue(value), "Select a valid start date."),
+        endDate: z
+            .string()
+            .trim()
+            .refine((value) => !value || isValidDateValue(value), "Select a valid end date."),
+        notes: z.string(),
+    })
+    .superRefine((values, context) => {
+        if (hasInvalidEndDateRange(values)) {
+            context.addIssue({
+                code: "custom",
+                path: ["endDate"],
+                message: "End date must be after the start date.",
+            });
+        }
+    });
 
-    if (!trimmedEmail) {
-        errors.email = "Enter an email address.";
-    } else if (!emailPattern.test(trimmedEmail)) {
-        errors.email = "Enter a valid email address.";
-    }
-
-    if (!trimmedPhone) {
-        errors.phone = "Enter a phone number.";
-    }
-
-    if (trimmedWebsite && !isValidHttpUrl(trimmedWebsite)) {
-        errors.website = "Enter a valid website URL.";
-    }
-
-    if (!values.plan) {
-        errors.plan = "Select a plan.";
-    }
-
-    if (!values.monthlyFee.trim()) {
-        errors.monthlyFee = "Enter the monthly fee.";
-    } else if (!Number.isFinite(monthlyFee) || monthlyFee < 0) {
-        errors.monthlyFee = "Enter a valid monthly fee.";
-    }
-
-    if (!values.startDate) {
-        errors.startDate = "Select a start date.";
-    } else if (!isValidDateValue(values.startDate)) {
-        errors.startDate = "Select a valid start date.";
-    }
-
-    if (values.endDate && !isValidDateValue(values.endDate)) {
-        errors.endDate = "Select a valid end date.";
-    } else if (values.endDate && values.startDate && values.endDate < values.startDate) {
-        errors.endDate = "End date must be after the start date.";
-    }
-
-    return errors;
+function hasInvalidEndDateRange(values: AddClientFormValues) {
+    return endDateRangeChecks.every((check) => check(values));
 }
 
-function toAddClientInput(values: AddClientFormValues): AddClientInput {
+function getInitialFormValues(client?: ClientRow | null): AddClientFormValues {
+    if (!client) {
+        return initialFormValues;
+    }
+
+    return {
+        companyName: client.clientName,
+        contactPerson: client.contactPerson,
+        email: client.email,
+        phone: client.phone,
+        website: client.website,
+        plan: client.plan,
+        monthlyFee: String(client.monthlyFeeValue),
+        startDate: client.startDateValue,
+        endDate: client.endDateValue,
+        notes: client.notes,
+    };
+}
+
+function toClientInput(values: AddClientFormValues): AddClientInput {
     return {
         companyName: values.companyName.trim(),
         contactPerson: values.contactPerson.trim(),
@@ -148,7 +168,90 @@ async function readClientResponse(response: Response) {
     }
 }
 
+function getClientSubmitErrorMessage(isEditing: boolean) {
+    return isEditing
+        ? "Unable to update client. Please try again."
+        : "Unable to save client. Please try again.";
+}
+
+function getClientFailureStatus(isEditing: boolean, message?: string) {
+    return {
+        tone: "error" as const,
+        title: isEditing ? "Client not updated" : "Client not created",
+        message: message || getClientSubmitErrorMessage(isEditing),
+    };
+}
+
+function getClientSuccessStatus(
+    isEditing: boolean,
+    clientInput: AddClientInput,
+    message?: string
+) {
+    return {
+        tone: "success" as const,
+        title: isEditing ? "Client updated" : "Client created",
+        message: isEditing
+            ? `${clientInput.companyName} was updated successfully.`
+            : message || "Client created!",
+    };
+}
+
+function getFieldErrorMessages(errors: FieldErrors<AddClientFormValues>) {
+    const fieldErrors: Partial<Record<keyof AddClientFormValues, string>> = {};
+
+    addClientFieldOrder.forEach((fieldName) => {
+        const message = errors[fieldName]?.message;
+
+        if (typeof message === "string") {
+            fieldErrors[fieldName] = message;
+        }
+    });
+
+    return fieldErrors;
+}
+
+async function saveClient(client: ClientRow | null | undefined, values: AddClientFormValues) {
+    const isEditing = Boolean(client);
+    const clientInput = toClientInput(values);
+    const body = getClientRequestBody(client, clientInput);
+    const response = await fetch("/api/clients", {
+        method: client ? "PATCH" : "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+    const result = await readClientResponse(response);
+
+    if (!response.ok || !result.ok) {
+        return {
+            ok: false,
+            status: getClientFailureStatus(isEditing, result.message),
+        };
+    }
+
+    return {
+        ok: true,
+        status: getClientSuccessStatus(isEditing, clientInput, result.message),
+    };
+}
+
+function getClientRequestBody(
+    client: ClientRow | null | undefined,
+    clientInput: AddClientInput
+): AddClientInput | UpdateClientInput {
+    if (!client) {
+        return clientInput;
+    }
+
+    return {
+        ...clientInput,
+        clientId: client.id,
+    };
+}
+
 export default function AddClientController({
+    client,
     isOpen,
     onAfterClose,
     onClose,
@@ -156,24 +259,20 @@ export default function AddClientController({
     onStatusChange,
 }: AddClientControllerProps) {
     const router = useRouter();
-    const [formValues, setFormValues] = useState<AddClientFormValues>(initialFormValues);
-    const [errors, setErrors] = useState<AddClientFormErrors>({});
-    const { isSubmitting, setPendingState } = usePendingState(onPendingChange);
-
-    function setSubmitError(message: string) {
-        onStatusChange?.({
-            tone: "error",
-            title: "Client not created",
-            message,
-        });
-    }
-
-    function clearFieldError(fieldName: keyof AddClientFormValues) {
-        setErrors((currentErrors) => ({
-            ...currentErrors,
-            [fieldName]: undefined,
-        }));
-    }
+    const {
+        control,
+        formState: { errors, isSubmitting },
+        handleSubmit,
+        reset,
+    } = useForm<AddClientFormValues>({
+        defaultValues: getInitialFormValues(client),
+        resolver: zodResolver(addClientFormSchema),
+    });
+    const isEditing = Boolean(client);
+    const modalTitle = isEditing ? "Edit client" : "Add client";
+    const modalDescription = isEditing
+        ? "Update the client profile with current contact and plan details."
+        : "Create a new client profile with contact and plan details.";
 
     function handleModalClose() {
         if (isSubmitting) {
@@ -184,115 +283,62 @@ export default function AddClientController({
     }
 
     function handleModalAfterClose() {
-        setFormValues(initialFormValues);
-        setErrors({});
+        reset(initialFormValues);
         onAfterClose?.();
     }
 
-    function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
-        const fieldName = event.target.name as keyof AddClientFormValues;
-        const { value } = event.target;
-
-        setFormValues((currentValues) => ({
-            ...currentValues,
-            [fieldName]: value,
-        }));
-        clearFieldError(fieldName);
+    function handleInvalidSubmit(nextErrors: FieldErrors<AddClientFormValues>) {
+        scrollToFirstFieldError(
+            getFieldErrorMessages(nextErrors),
+            addClientFieldOrder,
+            addClientFieldIds
+        );
     }
 
-    function handleTextareaChange(event: ChangeEvent<HTMLTextAreaElement>) {
-        const fieldName = event.target.name as keyof AddClientFormValues;
-        const { value } = event.target;
+    async function handleValidSubmit(values: AddClientFormValues) {
+        onPendingChange?.(true);
 
-        setFormValues((currentValues) => ({
-            ...currentValues,
-            [fieldName]: value,
-        }));
-        clearFieldError(fieldName);
+        const result = await getSaveResult(values);
+
+        handleSaveResult(result);
+        onPendingChange?.(false);
     }
 
-    function handlePlanChange(value: AddClientFormValues["plan"]) {
-        if (value && !clientPlans.includes(value)) {
-            return;
-        }
-
-        setFormValues((currentValues) => ({
-            ...currentValues,
-            plan: value,
-        }));
-        clearFieldError("plan");
-    }
-
-    function handleDateChange(fieldName: "startDate" | "endDate", value: string) {
-        setFormValues((currentValues) => ({
-            ...currentValues,
-            [fieldName]: value,
-        }));
-        clearFieldError(fieldName);
-    }
-
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const nextErrors = validateAddClientForm(formValues);
-
-        setErrors(nextErrors);
-
-        if (Object.keys(nextErrors).length > 0) {
-            scrollToFirstFieldError(nextErrors, addClientFieldOrder, addClientFieldIds);
-            return;
-        }
-
-        setPendingState(true);
-
+    async function getSaveResult(values: AddClientFormValues) {
         try {
-            const response = await fetch("/api/clients", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(toAddClientInput(formValues)),
-            });
+            return await saveClient(client, values);
+        } catch {
+            return {
+                ok: false,
+                status: getClientFailureStatus(isEditing),
+            };
+        }
+    }
 
-            const result = await readClientResponse(response);
+    function handleSaveResult(result: Awaited<ReturnType<typeof getSaveResult>>) {
+        onStatusChange?.(result.status);
 
-            if (!response.ok || !result.ok) {
-                setSubmitError(result.message || "Unable to save client. Please try again.");
-                return;
-            }
-
-            onStatusChange?.({
-                tone: "success",
-                title: "Client created",
-                message: result.message || "Client created!",
-            });
+        if (result.ok) {
             onClose();
             router.refresh();
-        } catch {
-            setSubmitError("Unable to save client. Please try again.");
-        } finally {
-            setPendingState(false);
         }
     }
 
     return (
         <Modal
             isOpen={isOpen}
-            title="Add client"
-            description="Create a new client profile with contact and plan details."
+            title={modalTitle}
+            description={modalDescription}
             size="lg"
             onClose={handleModalClose}
             onAfterClose={handleModalAfterClose}
         >
             <AddClientForm
-                values={formValues}
+                control={control}
                 errors={errors}
                 isSubmitting={isSubmitting}
                 onCancel={handleModalClose}
-                onDateChange={handleDateChange}
-                onInputChange={handleInputChange}
-                onPlanChange={handlePlanChange}
-                onSubmit={handleSubmit}
-                onTextareaChange={handleTextareaChange}
+                onSubmit={handleSubmit(handleValidSubmit, handleInvalidSubmit)}
             />
         </Modal>
     );

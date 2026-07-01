@@ -7,11 +7,6 @@ import { defaultClientFilters } from "@/hooks/clients/useClientFilters";
 import { clientPlanLabels } from "@/server/clients/options";
 import type { ClientFilters, ClientPlan, ClientStatusFilter } from "@/server/clients/types";
 
-interface ClientFilterProps {
-    filters: ClientFilters;
-    onFiltersChange: (filters: ClientFilters) => void;
-}
-
 const statusFilterOptions: SelectFieldOption[] = [
     { value: "all", label: "All" },
     { value: "active", label: "Active" },
@@ -26,7 +21,13 @@ const planFilterOptions: SelectFieldOption[] = [
     })),
 ];
 
-export default function ClientFilter({ filters, onFiltersChange }: ClientFilterProps) {
+export default function ClientFilter({
+    filters,
+    onFiltersChange,
+}: {
+    filters: ClientFilters;
+    onFiltersChange: (filters: ClientFilters) => void;
+}) {
     const [draftFilters, setDraftFilters] = useState(filters);
     const appliedFilterCount =
         (filters.status !== "all" ? 1 : 0) + (filters.plan !== "all" ? 1 : 0);

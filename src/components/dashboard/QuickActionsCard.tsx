@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, LucideIcon, Plus, WalletCards } from "lucide-react";
+import { FileText, LucideIcon, WalletCards, UserPlus } from "lucide-react";
 import Button from "@/components/ui/Button";
 import ButtonLink from "@/components/ui/ButtonLink";
 
@@ -22,7 +22,7 @@ const quickActions: QuickActionItem[] = [
     {
         label: "Add Client",
         action: "add-client",
-        icon: Plus,
+        icon: UserPlus,
     },
     {
         label: "Create Invoice",

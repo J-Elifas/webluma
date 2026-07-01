@@ -1,47 +1,10 @@
-import { AlertTriangle, CircleDollarSign, Clock, ReceiptText, type LucideIcon } from "lucide-react";
+import { AlertTriangle, CircleDollarSign, Clock, ReceiptText } from "lucide-react";
+import MetricCard from "@/components/ui/MetricCard";
 import { currencyFormatter, formatDateValue } from "@/lib/utils";
 import type { BillingInvoiceRow } from "@/server/invoices/types";
 
-type BillingMetricTone = "amber" | "blue" | "mint" | "rose";
-
-interface BillingMetricCardProps {
-    helper: string;
-    icon: LucideIcon;
-    label: string;
-    tone: BillingMetricTone;
-    value: string;
-}
-
 interface BillingMetricCardsProps {
     invoices: BillingInvoiceRow[];
-}
-
-const toneClasses: Record<BillingMetricTone, string> = {
-    amber: "bg-amber-100 text-amber-600",
-    blue: "bg-luma-blue/10 text-luma-blue",
-    mint: "bg-soft-mint/50 text-teal-600",
-    rose: "bg-rose-100 text-rose-600",
-};
-
-function BillingMetricCard({ helper, icon: Icon, label, tone, value }: BillingMetricCardProps) {
-    return (
-        <article className="rounded-[1.25rem] border border-mist-gray/70 bg-white p-5 shadow-[0_18px_44px_-34px_rgba(15,23,42,0.45)]">
-            <div className="flex items-start justify-between gap-3">
-                <div>
-                    <p className="text-sm font-bold text-slate-gray">{label}</p>
-                    <p className="mt-3 text-3xl font-black tracking-normal text-midnight-slate">
-                        {value}
-                    </p>
-                </div>
-                <span
-                    className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${toneClasses[tone]}`}
-                >
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
-            </div>
-            <p className="mt-4 text-sm font-semibold text-slate-gray">{helper}</p>
-        </article>
-    );
 }
 
 function isPaidInvoice(invoice: BillingInvoiceRow) {
@@ -108,28 +71,28 @@ export default function BillingMetricCards({ invoices }: BillingMetricCardsProps
 
     return (
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Billing metrics">
-            <BillingMetricCard
+            <MetricCard
                 label="Paid revenue"
                 value={currencyFormatter.format(getPaidRevenue(invoices))}
                 helper={formatInvoiceCount(paidCount, "paid invoice")}
                 tone="mint"
                 icon={CircleDollarSign}
             />
-            <BillingMetricCard
+            <MetricCard
                 label="Pending amount"
                 value={currencyFormatter.format(getPendingAmount(invoices, todayValue))}
                 helper={formatInvoiceCount(pendingCount, "pending invoice")}
                 tone="amber"
                 icon={Clock}
             />
-            <BillingMetricCard
+            <MetricCard
                 label="Overdue amount"
                 value={currencyFormatter.format(getOverdueAmount(invoices, todayValue))}
                 helper={formatInvoiceCount(overdueCount, "overdue invoice")}
                 tone="rose"
                 icon={AlertTriangle}
             />
-            <BillingMetricCard
+            <MetricCard
                 label="Total invoices"
                 value={String(invoices.length)}
                 helper={`${formatInvoiceCount(paidCount, "paid invoice")} / ${formatInvoiceCount(

@@ -4,12 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Download } from "lucide-react";
 import Button from "@/components/ui/Button";
-import DataTable, { TablePagination, TableSearch } from "@/components/ui/DataTable";
-import StatusAlert, { type StatusAlertTone } from "@/components/ui/StatusAlert";
+import DataTable, { TableHeader, TablePagination, TableSearch } from "@/components/ui/DataTable";
+import StatusAlert from "@/components/ui/StatusAlert";
 import useStatusAlert from "@/hooks/useStatusAlert";
 import { cn } from "@/lib/utils";
 import type {
     ClientFilters,
+    ClientRow,
     ClientStatusTone,
     ClientTableData,
     DeleteClientMutationResult,
@@ -21,21 +22,11 @@ interface ClientsPanelProps {
     clientFilters: ClientFilters;
     clientSearchQuery: string;
     tableData: ClientTableData;
+    onClientEdit: (client: ClientRow) => void;
     onClientExport: () => void;
     onClientFiltersChange: (filters: ClientFilters) => void;
     onClientPageChange: (page: number) => void;
     onClientSearchQueryChange: (query: string) => void;
-}
-
-interface ClientDeleteStatus {
-    message: string;
-    title: string;
-    tone: StatusAlertTone;
-}
-
-interface ClientStatusPillProps {
-    children: string;
-    tone: ClientStatusTone;
 }
 
 const statusClasses: Record<ClientStatusTone, string> = {
@@ -45,6 +36,18 @@ const statusClasses: Record<ClientStatusTone, string> = {
 };
 const deleteClientErrorMessage = "Unable to delete client. Please try again.";
 const deleteClientSuccessMessage = "Client was deleted.";
+const clientTableColumns = [
+    { label: "No", className: "w-16" },
+    { label: "Client" },
+    { label: "Contact" },
+    { label: "Email" },
+    { label: "Status" },
+    { label: "Plan" },
+    { label: "Total invoiced" },
+    { label: "Outstanding" },
+    { label: "Last activity" },
+    { label: "Actions" },
+] as const;
 
 async function readDeleteClientResponse(response: Response): Promise<DeleteClientMutationResult> {
     try {
@@ -104,23 +107,23 @@ async function deleteClientRecord(clientId: string): Promise<DeleteClientMutatio
     }
 }
 
-function getDeleteClientStatus(result: DeleteClientMutationResult): ClientDeleteStatus {
+function getDeleteClientStatus(result: DeleteClientMutationResult) {
     if (result.ok) {
         return {
-            tone: "success",
+            tone: "success" as const,
             title: "Client deleted",
             message: result.message ?? deleteClientSuccessMessage,
         };
     }
 
     return {
-        tone: "error",
+        tone: "error" as const,
         title: "Client not deleted",
         message: result.message ?? deleteClientErrorMessage,
     };
 }
 
-function ClientStatusPill({ children, tone }: ClientStatusPillProps) {
+function ClientStatusPill({ children, tone }: { children: string; tone: ClientStatusTone }) {
     return (
         <span
             className={cn(
@@ -136,6 +139,7 @@ function ClientStatusPill({ children, tone }: ClientStatusPillProps) {
 export default function ClientsPanel({
     clientFilters,
     clientSearchQuery,
+    onClientEdit,
     onClientExport,
     onClientFiltersChange,
     onClientPageChange,
@@ -211,20 +215,7 @@ export default function ClientsPanel({
                     />
                 }
             >
-                <thead>
-                    <tr className="bg-cloud-white/80 text-xs font-bold uppercase text-slate-gray">
-                        <th className="w-16 px-4 py-3">No</th>
-                        <th className="px-4 py-3">Client</th>
-                        <th className="px-4 py-3">Contact</th>
-                        <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3">Plan</th>
-                        <th className="px-4 py-3">Total invoiced</th>
-                        <th className="px-4 py-3">Outstanding</th>
-                        <th className="px-4 py-3">Last activity</th>
-                        <th className="px-4 py-3">Actions</th>
-                    </tr>
-                </thead>
+                <TableHeader columns={clientTableColumns} />
                 <tbody className="divide-y divide-mist-gray/60">
                     {clients.length > 0 ? (
                         clients.map((client, index) => (
@@ -269,6 +260,7 @@ export default function ClientsPanel({
                                     <ClientActions
                                         clientName={client.clientName}
                                         isDeleting={deletingClientId === client.id}
+                                        onEdit={() => onClientEdit(client)}
                                         onDelete={() => {
                                             void handleDeleteClient(client.id);
                                         }}
@@ -279,7 +271,7 @@ export default function ClientsPanel({
                     ) : (
                         <tr>
                             <td
-                                colSpan={9}
+                                colSpan={10}
                                 className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-gray"
                             >
                                 No clients found.

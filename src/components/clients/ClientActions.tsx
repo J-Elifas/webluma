@@ -9,9 +9,15 @@ interface ClientActionsProps {
     clientName: string;
     isDeleting: boolean;
     onDelete: () => void;
+    onEdit: () => void;
 }
 
-export default function ClientActions({ clientName, isDeleting, onDelete }: ClientActionsProps) {
+export default function ClientActions({
+    clientName,
+    isDeleting,
+    onDelete,
+    onEdit,
+}: ClientActionsProps) {
     const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
 
     function handleDeleteConfirm() {
@@ -27,7 +33,8 @@ export default function ClientActions({ clientName, isDeleting, onDelete }: Clie
                     variant="secondary"
                     size="icon-sm"
                     aria-label={`Edit ${clientName}`}
-                    disabled
+                    disabled={isDeleting}
+                    onClick={onEdit}
                     className="rounded-xl text-slate-gray"
                 >
                     <Pencil className="h-4 w-4" aria-hidden="true" />

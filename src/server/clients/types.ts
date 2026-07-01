@@ -15,20 +15,33 @@ export interface AddClientInput {
     notes?: string;
 }
 
-type AddClientFormTextValues = {
-    [FieldName in keyof AddClientInput]-?: string;
-};
+export interface UpdateClientInput extends AddClientInput {
+    clientId: string;
+}
 
-export type AddClientFormValues = Omit<AddClientFormTextValues, "plan"> & {
-    plan: AddClientInput["plan"] | "";
+export type AddClientFormValues = {
+    companyName: string;
+    contactPerson: string;
+    email: string;
+    phone: string;
+    website: string;
+    plan: string;
+    monthlyFee: string;
+    startDate: string;
+    endDate: string;
+    notes: string;
 };
-
-export type AddClientFormErrors = Partial<Record<keyof AddClientFormValues, string>>;
 
 export interface AddClientMutationResult {
     message?: string;
     ok: boolean;
     client?: AddClientInput;
+}
+
+export interface UpdateClientMutationResult {
+    message?: string;
+    ok: boolean;
+    client?: UpdateClientInput;
 }
 
 export interface ClientRow {
@@ -37,8 +50,13 @@ export interface ClientRow {
     contactPerson: string;
     phone: string;
     email: string;
+    website: string;
     plan: ClientPlan;
     planLabel: string;
+    monthlyFeeValue: number;
+    startDateValue: string;
+    endDateValue: string;
+    notes: string;
     status: ClientStatusTone;
     statusLabel: string;
     totalInvoiced: string;

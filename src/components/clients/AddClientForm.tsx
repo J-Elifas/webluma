@@ -1,6 +1,7 @@
 "use client";
 
-import type { ChangeEventHandler, FormEventHandler } from "react";
+import type { FormEventHandler } from "react";
+import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import Button from "@/components/ui/Button";
 import DateInputField from "@/components/ui/DateInputField";
 import EmailInputField from "@/components/ui/EmailInputField";
@@ -10,19 +11,7 @@ import SelectField, { type SelectFieldOption } from "@/components/ui/SelectField
 import TextareaField from "@/components/ui/TextareaField";
 import TextInputField from "@/components/ui/TextInputField";
 import UrlInputField from "@/components/ui/UrlInputField";
-import type { AddClientFormErrors, AddClientFormValues } from "@/server/clients/types";
-
-interface AddClientFormProps {
-    values: AddClientFormValues;
-    errors: AddClientFormErrors;
-    isSubmitting: boolean;
-    onCancel: () => void;
-    onDateChange: (fieldName: "startDate" | "endDate", value: string) => void;
-    onInputChange: ChangeEventHandler<HTMLInputElement>;
-    onPlanChange: (value: AddClientFormValues["plan"]) => void;
-    onSubmit: FormEventHandler<HTMLFormElement>;
-    onTextareaChange: ChangeEventHandler<HTMLTextAreaElement>;
-}
+import type { AddClientFormValues } from "@/server/clients/types";
 
 const planOptions: SelectFieldOption[] = [
     { value: "starter", label: "Starter" },
@@ -31,16 +20,18 @@ const planOptions: SelectFieldOption[] = [
 ];
 
 export default function AddClientForm({
+    control,
     errors,
     isSubmitting,
     onCancel,
-    onDateChange,
-    onInputChange,
-    onPlanChange,
     onSubmit,
-    onTextareaChange,
-    values,
-}: AddClientFormProps) {
+}: {
+    control: Control<AddClientFormValues>;
+    errors: FieldErrors<AddClientFormValues>;
+    isSubmitting: boolean;
+    onCancel: () => void;
+    onSubmit: FormEventHandler<HTMLFormElement>;
+}) {
     return (
         <form className="space-y-6" onSubmit={onSubmit} noValidate>
             <section className="space-y-4" aria-labelledby="client-details-heading">
@@ -48,65 +39,100 @@ export default function AddClientForm({
                     Client Details
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <TextInputField
-                        id="company-name"
+                    <Controller
                         name="companyName"
-                        label="Company Name"
-                        placeholder="Acme Studio"
-                        autoComplete="organization"
-                        value={values.companyName}
-                        onChange={onInputChange}
-                        error={errors.companyName}
-                        disabled={isSubmitting}
-                        isRequired
+                        control={control}
+                        render={({ field }) => (
+                            <TextInputField
+                                id="company-name"
+                                label="Company Name"
+                                placeholder="Acme Studio"
+                                autoComplete="organization"
+                                value={field.value}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                error={errors.companyName?.message}
+                                disabled={isSubmitting}
+                                isRequired
+                            />
+                        )}
                     />
-                    <TextInputField
-                        id="contact-person"
+                    <Controller
                         name="contactPerson"
-                        label="Contact Person"
-                        placeholder="Sarah Wilson"
-                        autoComplete="name"
-                        value={values.contactPerson}
-                        onChange={onInputChange}
-                        error={errors.contactPerson}
-                        disabled={isSubmitting}
-                        isRequired
+                        control={control}
+                        render={({ field }) => (
+                            <TextInputField
+                                id="contact-person"
+                                label="Contact Person"
+                                placeholder="Sarah Wilson"
+                                autoComplete="name"
+                                value={field.value}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                error={errors.contactPerson?.message}
+                                disabled={isSubmitting}
+                                isRequired
+                            />
+                        )}
                     />
-                    <EmailInputField
-                        id="client-email"
+                    <Controller
                         name="email"
-                        label="Email"
-                        placeholder="sarah@acme.com"
-                        autoComplete="email"
-                        value={values.email}
-                        onChange={onInputChange}
-                        error={errors.email}
-                        disabled={isSubmitting}
-                        isRequired
+                        control={control}
+                        render={({ field }) => (
+                            <EmailInputField
+                                id="client-email"
+                                label="Email"
+                                placeholder="sarah@acme.com"
+                                autoComplete="email"
+                                value={field.value}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                error={errors.email?.message}
+                                disabled={isSubmitting}
+                                isRequired
+                            />
+                        )}
                     />
-                    <PhoneInputField
-                        id="client-phone"
+                    <Controller
                         name="phone"
-                        label="Phone"
-                        placeholder="+64 198-xxxx-xxxx"
-                        autoComplete="tel"
-                        value={values.phone}
-                        onChange={onInputChange}
-                        error={errors.phone}
-                        disabled={isSubmitting}
-                        isRequired
+                        control={control}
+                        render={({ field }) => (
+                            <PhoneInputField
+                                id="client-phone"
+                                label="Phone"
+                                placeholder="+64 198-xxxx-xxxx"
+                                autoComplete="tel"
+                                value={field.value}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                error={errors.phone?.message}
+                                disabled={isSubmitting}
+                                isRequired
+                            />
+                        )}
                     />
-                    <UrlInputField
-                        id="client-website"
+                    <Controller
                         name="website"
-                        label="Website"
-                        placeholder="https://acme.com"
-                        autoComplete="url"
-                        value={values.website}
-                        onChange={onInputChange}
-                        error={errors.website}
-                        disabled={isSubmitting}
-                        className="sm:col-span-2"
+                        control={control}
+                        render={({ field }) => (
+                            <UrlInputField
+                                id="client-website"
+                                label="Website"
+                                placeholder="https://acme.com"
+                                autoComplete="url"
+                                value={field.value}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                error={errors.website?.message}
+                                disabled={isSubmitting}
+                                className="sm:col-span-2"
+                            />
+                        )}
                     />
                 </div>
             </section>
@@ -116,75 +142,100 @@ export default function AddClientForm({
                     Plan Details
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <SelectField
-                        id="client-plan"
+                    <Controller
                         name="plan"
-                        label="Plan"
-                        options={planOptions}
-                        placeholder="Select a plan"
-                        value={values.plan}
-                        error={errors.plan}
-                        disabled={isSubmitting}
-                        onValueChange={(value) =>
-                            onPlanChange(value as AddClientFormValues["plan"])
-                        }
-                        isRequired
+                        control={control}
+                        render={({ field }) => (
+                            <SelectField
+                                id="client-plan"
+                                name={field.name}
+                                label="Plan"
+                                options={planOptions}
+                                placeholder="Select a plan"
+                                value={field.value}
+                                error={errors.plan?.message}
+                                disabled={isSubmitting}
+                                onValueChange={field.onChange}
+                                isRequired
+                            />
+                        )}
                     />
-                    <NumberInputField
-                        id="monthly-fee"
+                    <Controller
                         name="monthlyFee"
-                        label="Monthly Fee"
-                        placeholder="100"
-                        min="0"
-                        step="1"
-                        inputMode="decimal"
-                        value={values.monthlyFee}
-                        onChange={onInputChange}
-                        error={errors.monthlyFee}
-                        disabled={isSubmitting}
-                        isRequired
+                        control={control}
+                        render={({ field }) => (
+                            <NumberInputField
+                                id="monthly-fee"
+                                label="Monthly Fee"
+                                placeholder="100"
+                                min="0"
+                                step="1"
+                                inputMode="decimal"
+                                value={field.value}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                onChange={field.onChange}
+                                error={errors.monthlyFee?.message}
+                                disabled={isSubmitting}
+                                isRequired
+                            />
+                        )}
                     />
-                    <DateInputField
-                        id="start-date"
+                    <Controller
                         name="startDate"
-                        label="Start Date"
-                        value={values.startDate}
-                        error={errors.startDate}
-                        disabled={isSubmitting}
-                        onValueChange={(value) => onDateChange("startDate", value)}
-                        isRequired
+                        control={control}
+                        render={({ field }) => (
+                            <DateInputField
+                                id="start-date"
+                                name={field.name}
+                                label="Start Date"
+                                value={field.value}
+                                error={errors.startDate?.message}
+                                disabled={isSubmitting}
+                                onValueChange={field.onChange}
+                                isRequired
+                            />
+                        )}
                     />
-                    <DateInputField
-                        id="end-date"
+                    <Controller
                         name="endDate"
-                        label="End Date"
-                        value={values.endDate}
-                        error={errors.endDate}
-                        disabled={isSubmitting}
-                        onValueChange={(value) => onDateChange("endDate", value)}
+                        control={control}
+                        render={({ field }) => (
+                            <DateInputField
+                                id="end-date"
+                                name={field.name}
+                                label="End Date"
+                                value={field.value}
+                                error={errors.endDate?.message}
+                                disabled={isSubmitting}
+                                onValueChange={field.onChange}
+                            />
+                        )}
                     />
                 </div>
             </section>
 
-            <TextareaField
-                id="client-notes"
+            <Controller
                 name="notes"
-                label="Notes"
-                rows={4}
-                placeholder="Add handoff details, billing context, or onboarding notes."
-                value={values.notes}
-                onChange={onTextareaChange}
-                error={errors.notes}
-                disabled={isSubmitting}
+                control={control}
+                render={({ field }) => (
+                    <TextareaField
+                        id="client-notes"
+                        label="Notes"
+                        rows={4}
+                        placeholder="Add handoff details, billing context, or onboarding notes."
+                        value={field.value}
+                        name={field.name}
+                        onBlur={field.onBlur}
+                        onChange={field.onChange}
+                        error={errors.notes?.message}
+                        disabled={isSubmitting}
+                    />
+                )}
             />
 
             <div className="flex flex-col-reverse gap-3 border-t border-mist-gray/70 pt-5 sm:flex-row sm:justify-end">
-                <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={isSubmitting}
-                    onClick={onCancel}
-                >
+                <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onCancel}>
                     Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
